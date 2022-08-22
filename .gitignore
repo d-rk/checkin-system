@@ -1,0 +1,4 @@
+.vscode
+.idea
+backend/.env
+backend/checkin-system

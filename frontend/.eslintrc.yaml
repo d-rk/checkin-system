@@ -1,0 +1,21 @@
+extends:
+  - ./node_modules/gts
+  - plugin:promise/recommended
+  - plugin:react/recommended
+  - plugin:react-hooks/recommended
+
+env:
+  browser: true
+
+rules:
+  no-return-await: 'error'
+  no-throw-literal: 'error'
+  promise/prefer-await-to-then: 'error'
+  promise/prefer-await-to-callbacks: 'error'
+  react/display-name: 'warn'
+  react/prop-types: 'warn'
+  '@typescript-eslint/no-explicit-any': 'off'
+
+settings:
+  react:
+    version: 'detect'

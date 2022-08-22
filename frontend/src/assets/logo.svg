@@ -1,0 +1,9 @@
+<svg width="198.82" height="17.616" version="1.1" viewBox="0 0 52.603 4.6609" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs>
+  <radialGradient id="radialGradient27273" cx="26.301" cy="2.3304" r="26.302" gradientTransform="matrix(1 0 0 .088605 0 2.124)" gradientUnits="userSpaceOnUse">
+   <stop offset="0"/>
+   <stop stop-opacity="0" offset="1"/>
+  </radialGradient>
+ </defs>
+ <text x="-0.41919801" y="4.5973783" fill="#943e3e" font-family="sans-serif" font-size="6.35px" stroke="url(#radialGradient27273)" stroke-width=".26458" style="line-height:1.25" xml:space="preserve"><tspan x="-0.41919801" y="4.5973783" fill="#943e3e" font-family="'Noto Sans Mono'" font-size="6.35px" stroke="url(#radialGradient27273)" stroke-width=".26458">CHECKIN SYSTEM</tspan></text>
+</svg>

@@ -1,0 +1,9 @@
+---
+timeline:
+  title: Zeitleiste
+activity:
+  title: Aktivitäten
+profile:
+  title: Profil
+login:
+  failed: Login fehlgeschlagen

@@ -1,0 +1,9 @@
+---
+timeline:
+  title: Timeline
+activity:
+  title: Activities
+profile:
+  title: Profile
+login:
+  failed: Login failed
