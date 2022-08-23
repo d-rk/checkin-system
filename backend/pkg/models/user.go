@@ -40,22 +40,22 @@ func GetUserByID(db *sqlx.DB, uid int64) (User, error) {
 	return user, nil
 }
 
-func GetUserByName(db *sqlx.DB, name string) (User, error) {
+func GetUserByName(db *sqlx.DB, name string, excludeID int64) (User, error) {
 
 	user := User{}
 
-	if err := db.Get(&user, "SELECT * FROM users WHERE name = $1", name); err != nil {
+	if err := db.Get(&user, "SELECT * FROM users WHERE name = $1 and id != $2", name, excludeID); err != nil {
 		return user, errors.New("user not found")
 	}
 
 	return user, nil
 }
 
-func GetUserByRfidUid(db *sqlx.DB, rfidUID string) (User, error) {
+func GetUserByRfidUid(db *sqlx.DB, rfidUID string, excludeID int64) (User, error) {
 
 	user := User{}
 
-	if err := db.Get(&user, "SELECT * FROM users WHERE rfid_uid = $1", rfidUID); err != nil {
+	if err := db.Get(&user, "SELECT * FROM users WHERE rfid_uid = $1 and id != $2", rfidUID, excludeID); err != nil {
 		return user, errors.New("user not found")
 	}
 
@@ -116,7 +116,7 @@ func DeleteAllUsers(db *sqlx.DB, ctx context.Context) error {
 	})
 }
 
-func (user *User) Save(db *sqlx.DB, ctx context.Context) (*User, error) {
+func (user *User) Insert(db *sqlx.DB, ctx context.Context) (*User, error) {
 
 	user.CreatedAt = time.Now()
 
@@ -137,6 +137,23 @@ func (user *User) Save(db *sqlx.DB, ctx context.Context) (*User, error) {
 	if err := row.Scan(&user.ID); err != nil {
 		return nil, err
 	}
+
+	return user, nil
+}
+
+func (user *User) Update(db *sqlx.DB, ctx context.Context) (*User, error) {
+
+	user.UpdatedAt = null.TimeFrom(time.Now())
+
+	updateStatement, err := db.PrepareNamedContext(ctx, `UPDATE users SET
+    		(updated_at, name, rfid_uid) =
+            (:updated_at, :name,:rfid_uid) WHERE id = :id`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_ = updateStatement.MustExecContext(ctx, user)
 
 	return user, nil
 }

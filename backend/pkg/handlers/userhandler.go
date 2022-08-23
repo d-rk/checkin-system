@@ -41,14 +41,14 @@ func (h *UserHandler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	users, err := models.GetUserByID(h.db, id)
+	user, err := models.GetUserByID(h.db, id)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "No users found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	c.JSON(http.StatusOK, user)
 }
 
 func (h *UserHandler) AddUser(c *gin.Context) {
@@ -60,17 +60,70 @@ func (h *UserHandler) AddUser(c *gin.Context) {
 		return
 	}
 
-	_, err := models.GetUserByName(h.db, user.Name)
+	_, err := models.GetUserByName(h.db, user.Name, -1)
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		return
 	}
 
-	savedUser, err := user.Save(h.db, c.Request.Context())
+	_, err = models.GetUserByRfidUid(h.db, user.RFIDuid, -1)
+
+	if err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User with rfid_uid already exists"})
+		return
+	}
+
+	savedUser, err := user.Insert(h.db, c.Request.Context())
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unable to save user: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, savedUser)
+}
+
+func (h *UserHandler) UpdateUser(c *gin.Context) {
+
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("param is not an id: %s", err.Error())})
+		return
+	}
+
+	user, err := models.GetUserByID(h.db, id)
+
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		return
+	}
+
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Unable to extract user from request body"})
+		return
+	}
+
+	_, err = models.GetUserByName(h.db, user.Name, user.ID)
+
+	if err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User with name already exists"})
+		return
+	}
+
+	_, err = models.GetUserByRfidUid(h.db, user.RFIDuid, user.ID)
+
+	if err == nil {
+		c.JSON(http.StatusConflict, gin.H{"error": "User with rfid_uid already exists"})
+		return
+	}
+
+	user.ID = id
+
+	savedUser, err := user.Update(h.db, c.Request.Context())
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unable to update user: %v", err)})
 		return
 	}
 

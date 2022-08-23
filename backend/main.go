@@ -24,11 +24,12 @@ func main() {
 	r.Use(middlewares.CORSMiddleware())
 
 	api := r.Group("/api/v1")
-	api.Use(middlewares.TimeoutMiddleware(30 * time.Second))
+	api.Use(middlewares.TimeoutMiddleware(5 * time.Second))
 
 	api.GET("/users", userHandler.ListUsers)
 	api.POST("/users", userHandler.AddUser)
 	api.GET("/users/:id", userHandler.GetUserByID)
+	api.PUT("/users/:id", userHandler.UpdateUser)
 	api.DELETE("/users/all", userHandler.DeleteAllUsers)
 	api.DELETE("/users/:id", userHandler.DeleteUser)
 	api.GET("/users/:id/checkins", checkInHandler.ListUserCheckIns)

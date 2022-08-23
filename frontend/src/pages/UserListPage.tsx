@@ -9,7 +9,7 @@ import {
   useToast,
 } from '@chakra-ui/react';
 import {FC, useRef} from 'react';
-import {deleteUser, useUserList} from '../api/checkInSystemApi';
+import {deleteUser, User, useUserList} from '../api/checkInSystemApi';
 import useModals from '../components/useModals';
 import {UserEdit, UserEditRef} from '../components/user/UserEdit';
 import UserList from '../components/user/UserList';
@@ -30,6 +30,11 @@ export const UserListPage: FC = () => {
 
   const onEditUser = async (userId: number) => {
     userEditRef.current?.show(userId);
+  };
+
+  const onUserEdited = (editUser: User) => {
+    const otherUsers = users?.filter(user => user.id !== editUser.id) || [];
+    mutate([...otherUsers, editUser]);
   };
 
   const onDeleteUser = async (userId: number) => {
@@ -68,7 +73,7 @@ export const UserListPage: FC = () => {
           onEdit={onEditUser}
           onDelete={onDeleteUser}
         />
-        <UserEdit ref={userEditRef} />
+        <UserEdit ref={userEditRef} onUserEdited={onUserEdited} />
       </Box>
     </Center>
   );

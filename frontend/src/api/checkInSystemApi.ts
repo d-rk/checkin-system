@@ -2,10 +2,13 @@ import axios, {AxiosResponse} from 'axios';
 import useSWR, {SWRResponse} from 'swr';
 import {Websocket, WebsocketBuilder} from 'websocket-ts';
 
-export type User = {
-  id: number;
+export type UserFields = {
   name: string;
   rfid_uid: string;
+};
+
+export type User = UserFields & {
+  id: number;
 };
 
 const fetcher = async (url: string) => {
@@ -23,6 +26,17 @@ export const getUser = (userId: number): Promise<AxiosResponse<User>> => {
 
 export const deleteUser = (userId: number) => {
   return axios.delete(`/api/v1/users/${userId}`);
+};
+
+export const updateUser = (
+  userId: number,
+  user: UserFields
+): Promise<AxiosResponse<User>> => {
+  return axios.put(`/api/v1/users/${userId}`, user);
+};
+
+export const addUser = (user: UserFields): Promise<AxiosResponse<User>> => {
+  return axios.post(`/api/v1/users`, user);
 };
 
 export const createWebsocket = (

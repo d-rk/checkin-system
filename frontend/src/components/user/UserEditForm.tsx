@@ -8,44 +8,38 @@ import {
   Input,
   SimpleGrid,
 } from '@chakra-ui/react';
-import React, {FC, useEffect} from 'react';
+import React, {FC} from 'react';
 import {useForm} from 'react-hook-form';
 import {Websocket} from 'websocket-ts/lib/websocket';
-import {createWebsocket, User} from '../../api/checkInSystemApi';
-
-export type Inputs = {
-  name: string;
-  rfid_uid: string;
-};
+import {createWebsocket, User, UserFields} from '../../api/checkInSystemApi';
 
 type Props = {
   user?: User;
-  onSubmit: (inputs: Inputs) => void;
+  onSubmit: (inputs: UserFields) => void;
 };
 
 export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: {errors, isSubmitting},
-  } = useForm<Inputs>();
+  } = useForm<UserFields>({
+    defaultValues: {
+      name: user?.name,
+      rfid_uid: user?.rfid_uid,
+    },
+  });
 
-  const [name, setName] = React.useState<string>();
-  const [rfidUid, setRfidUid] = React.useState<string>();
   const [rfidViaWebsocket, setRfidViaWebsocket] = React.useState(true);
 
   React.useState<Websocket>(
     createWebsocket((payload: any) => {
       if (rfidViaWebsocket && payload?.rfid_uid) {
-        setRfidUid(payload.rfid_uid);
+        setValue('rfid_uid', payload.rfid_uid);
       }
     })
   );
-
-  useEffect(() => {
-    setName(user?.name);
-    setRfidUid(user?.rfid_uid);
-  }, [user]);
 
   const toggleRfidViaWebsocket = () => {
     setRfidViaWebsocket(prevChecked => !prevChecked);
@@ -58,10 +52,10 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
           <FormControl isInvalid={errors?.name !== undefined}>
             <FormLabel>Name</FormLabel>
             <Input
-              {...register('name', {required: 'field is required'})}
+              {...register('name', {
+                required: 'field is required',
+              })}
               placeholder="enter name"
-              value={name}
-              onChange={event => setName(event.target.value)}
             />
             <FormHelperText>Name to identify user</FormHelperText>
             <FormErrorMessage>
@@ -79,8 +73,6 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
                   : 'id of the rfid token'
               }
               disabled={rfidViaWebsocket}
-              value={rfidUid}
-              onChange={event => setRfidUid(event.target.value)}
             />
             <FormHelperText>
               {rfidViaWebsocket

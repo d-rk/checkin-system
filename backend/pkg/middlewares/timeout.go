@@ -1,31 +1,27 @@
 package middlewares
 
 import (
-	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-contrib/timeout"
+	"github.com/gin-gonic/gin"
 )
 
-func TimeoutMiddleware(timeout time.Duration) gin.HandlerFunc {
+func timeoutResponse(timeoutDuration time.Duration) func(*gin.Context) {
 	return func(c *gin.Context) {
-		ctx, cancel := context.WithTimeout(c.Request.Context(), timeout)
-		defer cancel()
-
-		c.Request = c.Request.WithContext(ctx)
-
-		requestProcessed := make(chan bool)
-		go func() {
-			c.Next()
-			requestProcessed <- true
-		}()
-
-		select {
-		case <-ctx.Done():
-			c.JSON(http.StatusGatewayTimeout, gin.H{"error": fmt.Sprintf("request aborted after %v", timeout)})
-			return
-		case <-requestProcessed:
-		}
+		c.JSON(http.StatusRequestTimeout, gin.H{"error": fmt.Sprintf("request aborted after %v", timeoutDuration)})
 	}
+}
+
+func TimeoutMiddleware(timeoutDuration time.Duration) gin.HandlerFunc {
+
+	return timeout.New(
+		timeout.WithTimeout(timeoutDuration),
+		timeout.WithHandler(func(c *gin.Context) {
+			c.Next()
+		}),
+		timeout.WithResponse(timeoutResponse(timeoutDuration)),
+	)
 }

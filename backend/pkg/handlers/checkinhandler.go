@@ -64,7 +64,7 @@ func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
 
 	h.websocket.Publish(checkInRequest);
 
-	user, err := models.GetUserByRfidUid(h.db, checkInRequest.RFIDuid)
+	user, err := models.GetUserByRfidUid(h.db, checkInRequest.RFIDuid, -1)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No user found with rfid_uuid = %s", checkInRequest.RFIDuid)})

@@ -10,7 +10,10 @@ require (
 	github.com/rubenv/sql-migrate v1.1.2
 )
 
-require github.com/gorilla/websocket v1.5.0 // indirect
+require (
+	github.com/gin-contrib/timeout v0.0.3 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
+)
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect

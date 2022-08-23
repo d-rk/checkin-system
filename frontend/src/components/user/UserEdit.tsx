@@ -1,24 +1,31 @@
-import React from 'react';
 import {useDisclosure, useToast} from '@chakra-ui/react';
-import {
+import React, {
   forwardRef,
   ForwardRefRenderFunction,
   useImperativeHandle,
   useState,
 } from 'react';
-import {getUser, User} from '../../api/checkInSystemApi';
+import {
+  addUser,
+  getUser,
+  updateUser,
+  User,
+  UserFields,
+} from '../../api/checkInSystemApi';
 import {errorToast} from '../../utils/toast';
 import {ModalDialog} from '../ModalDialog';
-import {Inputs, UserEditForm} from './UserEditForm';
+import {UserEditForm} from './UserEditForm';
 
 export interface UserEditRef {
   show: (id?: number) => Promise<void>;
 }
 
-type Props = {};
+type Props = {
+  onUserEdited: (user: User) => void;
+};
 
 const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
-  props,
+  {onUserEdited},
   ref
 ) => {
   const toast = useToast();
@@ -45,8 +52,19 @@ const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
     },
   }));
 
-  function handleSubmit(userInput: Inputs) {
-    alert(JSON.stringify(userInput));
+  async function handleSubmit(userFields: UserFields) {
+    try {
+      let updateResponse;
+      if (user) {
+        updateResponse = await updateUser(user.id, userFields);
+      } else {
+        updateResponse = await addUser(userFields);
+      }
+      onUserEdited(updateResponse.data);
+      onClose();
+    } catch (error) {
+      toast(errorToast('unable to save user', error));
+    }
   }
 
   return (

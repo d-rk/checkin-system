@@ -1,9 +1,24 @@
 import {UseToastOptions} from '@chakra-ui/react';
+import axios from 'axios';
+
+type ApiErrorResponse = {
+  error: string;
+};
 
 export const errorToast = (
   message: string,
   error: unknown
 ): UseToastOptions => {
+  if (axios.isAxiosError(error)) {
+    // add message from api call
+    let details = (error.response?.data as ApiErrorResponse).error;
+
+    if (!details) {
+      details = 'unexpected error';
+    }
+    message = `${message}: ${details}`;
+  }
+
   console.log(`error occured: ${JSON.stringify(error)}`);
 
   return {
