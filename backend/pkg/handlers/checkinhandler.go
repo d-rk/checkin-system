@@ -36,6 +36,32 @@ func (h *CheckInHandler) ListCheckIns(c *gin.Context) {
 	c.JSON(http.StatusOK, checkIns)
 }
 
+func (h *CheckInHandler) ListCheckInsPerDay(c *gin.Context) {
+
+	dayParam, ok := c.GetQuery("day")
+
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "query param day is required"})
+		return
+	}
+
+	day, err := time.Parse("2006-01-02", dayParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": fmt.Sprintf("day param is not a date: %s", err.Error())})
+		return
+	}
+
+	checkIns, err := models.ListCheckInsPerDay(h.db, day)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
+		return
+	}
+
+	c.JSON(http.StatusOK, checkIns)
+}
+
+
+
 func (h *CheckInHandler) ListUserCheckIns(c *gin.Context) {
 
 	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)

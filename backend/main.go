@@ -36,8 +36,11 @@ func main() {
 	api.DELETE("/users/:id/checkins", checkInHandler.DeleteUserCheckIns)
 
 	api.GET("/checkins", checkInHandler.ListCheckIns)
+	api.GET("/checkins/per-day", checkInHandler.ListCheckInsPerDay)
 	api.POST("/checkins", checkInHandler.AddCheckIn)
 	api.DELETE("/checkins/:id", checkInHandler.DeleteCheckIn)
+
+
 
 	r.GET("/websocket", websocketHandler)
 

@@ -1,5 +1,6 @@
 import {Box, Flex, HStack, Link, useColorModeValue} from '@chakra-ui/react';
 import React, {ReactNode} from 'react';
+import {NavLink as RouteLink} from 'react-router-dom';
 
 const links = [
   {name: 'Users', route: '/users'},
@@ -15,7 +16,6 @@ const NavLink = ({children}: {children: ReactNode}) => (
       textDecoration: 'none',
       bg: useColorModeValue('gray.200', 'gray.700'),
     }}
-    href={'#'}
   >
     {children}
   </Link>
@@ -29,7 +29,15 @@ const Header = () => {
           <Box>Logo</Box>
           <HStack as={'nav'} spacing={4} display={{base: 'none', md: 'flex'}}>
             {links.map(link => (
-              <NavLink key={link.route}>{link.name}</NavLink>
+              <RouteLink
+                key={link.route}
+                to={link.route}
+                style={({isActive}) =>
+                  isActive ? {background: 'lightblue'} : {}
+                }
+              >
+                <NavLink>{link.name}</NavLink>
+              </RouteLink>
             ))}
           </HStack>
         </HStack>

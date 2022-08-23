@@ -1,4 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
+import {format} from 'date-fns';
 import useSWR, {SWRResponse} from 'swr';
 import {Websocket, WebsocketBuilder} from 'websocket-ts';
 
@@ -9,6 +10,16 @@ export type UserFields = {
 
 export type User = UserFields & {
   id: number;
+};
+
+export type CheckIn = {
+  id: number;
+  timestamp: string;
+  user_id: number;
+};
+
+export type CheckInWithUser = CheckIn & {
+  user: User;
 };
 
 const fetcher = async (url: string) => {
@@ -36,7 +47,16 @@ export const updateUser = (
 };
 
 export const addUser = (user: UserFields): Promise<AxiosResponse<User>> => {
-  return axios.post(`/api/v1/users`, user);
+  return axios.post('/api/v1/users', user);
+};
+
+export const useCheckInList = (
+  date: Date
+): SWRResponse<CheckInWithUser[], Error> => {
+  return useSWR<CheckInWithUser[], Error>(
+    `/api/v1/checkins/per-day?day=${format(date, 'yyyy-MM-dd')}`,
+    fetcher
+  );
 };
 
 export const createWebsocket = (
