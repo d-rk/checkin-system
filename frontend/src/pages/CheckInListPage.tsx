@@ -2,7 +2,12 @@ import {Box, Center, useToast} from '@chakra-ui/react';
 import {parse} from 'date-fns';
 import React, {FC, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {useCheckInList} from '../api/checkInSystemApi';
+import {Websocket} from 'websocket-ts/lib';
+import {
+  createWebsocket,
+  isCheckInMessage,
+  useCheckInList,
+} from '../api/checkInSystemApi';
 import {CheckInFilter} from '../components/checkin/CheckinFilter';
 import CheckInList from '../components/checkin/CheckInList';
 import {errorToast} from '../utils/toast';
@@ -26,6 +31,16 @@ export const CheckInListPage: FC = () => {
 
   const toast = useToast();
   const {data: checkIns, error, mutate} = useCheckInList(date);
+
+  React.useState<Websocket>(
+    createWebsocket((payload: any) => {
+      if (isCheckInMessage(payload) && payload.check_in) {
+        if (new Date(payload.check_in.date).getTime() === date.getTime()) {
+          mutate();
+        }
+      }
+    })
+  );
 
   if (!date) {
     return null;

@@ -14,12 +14,22 @@ export type User = UserFields & {
 
 export type CheckIn = {
   id: number;
+  date: string;
   timestamp: string;
   user_id: number;
 };
 
 export type CheckInWithUser = CheckIn & {
   user: User;
+};
+
+export type CheckInMessage = {
+  rfid_uid: string;
+  check_in?: CheckIn;
+};
+
+export const isCheckInMessage = (message: any): message is CheckInMessage => {
+  return (message as CheckInMessage).rfid_uid !== undefined;
 };
 
 const fetcher = async (url: string) => {

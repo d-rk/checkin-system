@@ -11,7 +11,12 @@ import {
 import React, {FC} from 'react';
 import {useForm} from 'react-hook-form';
 import {Websocket} from 'websocket-ts/lib/websocket';
-import {createWebsocket, User, UserFields} from '../../api/checkInSystemApi';
+import {
+  createWebsocket,
+  isCheckInMessage,
+  User,
+  UserFields,
+} from '../../api/checkInSystemApi';
 
 type Props = {
   user?: User;
@@ -35,7 +40,7 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
 
   React.useState<Websocket>(
     createWebsocket((payload: any) => {
-      if (rfidViaWebsocket && payload?.rfid_uid) {
+      if (rfidViaWebsocket && isCheckInMessage(payload)) {
         setValue('rfid_uid', payload.rfid_uid);
       }
     })

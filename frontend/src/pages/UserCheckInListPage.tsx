@@ -10,7 +10,14 @@ import {
 } from '@chakra-ui/react';
 import React, {FC, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {getUser, User, useUserCheckInList} from '../api/checkInSystemApi';
+import {Websocket} from 'websocket-ts/lib';
+import {
+  createWebsocket,
+  getUser,
+  isCheckInMessage,
+  User,
+  useUserCheckInList,
+} from '../api/checkInSystemApi';
 import UserCheckInList from '../components/checkin/UserCheckInList';
 import {errorToast} from '../utils/toast';
 
@@ -35,6 +42,16 @@ export const UserCheckInListPage: FC = () => {
     error,
     mutate,
   } = useUserCheckInList(userId ? +userId : -1);
+
+  React.useState<Websocket>(
+    createWebsocket((payload: any) => {
+      if (isCheckInMessage(payload) && payload.check_in) {
+        if (payload.check_in.user_id === user?.id) {
+          mutate();
+        }
+      }
+    })
+  );
 
   if (error) {
     toast(errorToast('unable to list checkIns', error));

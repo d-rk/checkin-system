@@ -21,6 +21,11 @@ type CheckinRequest struct {
 	RFIDuid string `db:"rfid_uid" json:"rfid_uid"`
 }
 
+type CheckinWebsocketMessage struct {
+	CheckinRequest
+	CheckIn *models.CheckIn `json:"check_in"`
+}
+
 func CreateCheckInHandler(db *sqlx.DB, websocket *websocket.Server) *CheckInHandler {
 	return &CheckInHandler{db, websocket}
 }
@@ -86,11 +91,13 @@ func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
 		return
 	}
 
-	h.websocket.Publish(checkInRequest)
-
 	user, err := models.GetUserByRfidUid(h.db, checkInRequest.RFIDuid, -1)
 
+	websocketMessage := CheckinWebsocketMessage{}
+	websocketMessage.RFIDuid = checkInRequest.RFIDuid
+
 	if err != nil {
+		h.websocket.Publish(websocketMessage)
 		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No user found with rfid_uuid = %s", checkInRequest.RFIDuid)})
 		return
 	}
@@ -109,6 +116,9 @@ func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
 		return
 	}
 
+	websocketMessage.CheckIn = savedCheckIn
+
+	h.websocket.Publish(websocketMessage)
 	c.JSON(http.StatusOK, savedCheckIn)
 }
 
