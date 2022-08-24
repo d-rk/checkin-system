@@ -1,4 +1,3 @@
-import React from 'react';
 import {AddIcon} from '@chakra-ui/icons';
 import {
   Box,
@@ -8,7 +7,8 @@ import {
   Spacer,
   useToast,
 } from '@chakra-ui/react';
-import {FC, useRef} from 'react';
+import React, {FC, useRef} from 'react';
+import {useNavigate} from 'react-router-dom';
 import {deleteUser, User, useUserList} from '../api/checkInSystemApi';
 import useModals from '../components/useModals';
 import {UserEdit, UserEditRef} from '../components/user/UserEdit';
@@ -16,13 +16,16 @@ import UserList from '../components/user/UserList';
 import {errorToast} from '../utils/toast';
 
 export const UserListPage: FC = () => {
+  const navigate = useNavigate();
   const toast = useToast();
   const {data: users, error, mutate} = useUserList();
   const userEditRef = useRef<UserEditRef>(null);
 
   const {confirm} = useModals();
 
-  const onShowCheckIns = async () => {};
+  const onShowCheckIns = async (userId: number) => {
+    navigate(`/users/${userId}/checkins`);
+  };
 
   const onCreateUser = async () => {
     userEditRef.current?.show();

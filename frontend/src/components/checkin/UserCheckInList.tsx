@@ -10,13 +10,13 @@ import {
 } from '@chakra-ui/react';
 import {formatInTimeZone} from 'date-fns-tz';
 import React, {FC} from 'react';
-import {CheckInWithUser} from '../../api/checkInSystemApi';
+import {CheckIn} from '../../api/checkInSystemApi';
 
 type Props = {
-  checkIns: CheckInWithUser[];
+  checkIns: CheckIn[];
 };
 
-const CheckInList: FC<Props> = ({checkIns}) => {
+const UserCheckInList: FC<Props> = ({checkIns}) => {
   return (
     <TableContainer>
       <Table>
@@ -24,8 +24,8 @@ const CheckInList: FC<Props> = ({checkIns}) => {
         <Thead>
           <Tr>
             <Th isNumeric>ID</Th>
+            <Th>Date</Th>
             <Th>Time</Th>
-            <Th>User</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -36,10 +36,16 @@ const CheckInList: FC<Props> = ({checkIns}) => {
                 {formatInTimeZone(
                   new Date(checkIn.timestamp),
                   'Europe/Berlin',
+                  'yy-MM-dd'
+                )}
+              </Td>
+              <Td>
+                {formatInTimeZone(
+                  new Date(checkIn.timestamp),
+                  'Europe/Berlin',
                   'HH:mm:ss'
                 )}
               </Td>
-              <Td>{checkIn.user.name}</Td>
             </Tr>
           ))}
           {checkIns.length === 0 && (
@@ -55,4 +61,4 @@ const CheckInList: FC<Props> = ({checkIns}) => {
   );
 };
 
-export default CheckInList;
+export default UserCheckInList;

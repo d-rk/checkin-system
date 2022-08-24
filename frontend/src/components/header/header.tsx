@@ -3,6 +3,7 @@ import React, {ReactNode} from 'react';
 import {NavLink as RouteLink} from 'react-router-dom';
 
 const links = [
+  {name: 'Calendar', route: '/calendar'},
   {name: 'Users', route: '/users'},
   {name: 'CheckIns', route: '/checkins'},
 ];

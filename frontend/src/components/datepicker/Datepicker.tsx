@@ -1,273 +1,131 @@
-import React, {FC, Fragment, useRef, useState, ReactNode} from 'react';
 import {
   Box,
-  Button,
-  Divider,
-  Heading,
-  HStack,
+  Input,
   Popover,
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
-  SimpleGrid,
-  Text,
+  useDisclosure,
   useOutsideClick,
-  VStack,
 } from '@chakra-ui/react';
 import {
-  InputGroup,
-  Input as InputComponent,
-  InputRightElement,
-} from '@chakra-ui/react';
-import {CalendarIcon} from '@chakra-ui/icons';
-import {
-  DateObj,
-  useDayzed,
-  RenderProps,
-  GetBackForwardPropsOptions,
   Calendar,
-} from 'dayzed';
-import {format} from 'date-fns';
+  CalendarControls,
+  CalendarDate,
+  CalendarDays,
+  CalendarMonth,
+  CalendarMonthName,
+  CalendarMonths,
+  CalendarNextButton,
+  CalendarPrevButton,
+  CalendarWeek,
+} from '@uselessdev/datepicker';
+import {format, isValid} from 'date-fns';
+import React, {FC} from 'react';
 
-const isEmpty = (obj: any) =>
-  [Object, Array].includes((obj || {}).constructor) &&
-  !Object.entries(obj || {}).length;
-
-const MONTH_NAMES_DEFAULT = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
-const DAY_NAMES_DEFAULT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DATE_FORMAT_DEFAULT = 'yyyy-MM-dd';
-
-function isDateObj(date: DateObj | ''): date is DateObj {
-  return (date as DateObj).date !== undefined;
-}
-
-interface DatepickerBackButtonsProps {
-  calendars: Calendar[];
-  getBackProps: (data: GetBackForwardPropsOptions) => Record<string, any>;
-}
-
-interface DatepickerForwardButtonsProps {
-  calendars: Calendar[];
-  getForwardProps: (data: GetBackForwardPropsOptions) => Record<string, any>;
-}
-
-export interface DatepickerProps {
-  disabled?: boolean;
-  onDateChange: (date: Date) => void;
-  id?: string;
-  name?: string;
-  date: Date;
-  configs?: DatepickerConfigs;
-}
-
-export interface DatepickerConfigs {
-  dateFormat: string;
-  monthNames: string[];
-  dayNames: string[];
-}
-
-const DatepickerBackButtons = (props: DatepickerBackButtonsProps) => {
-  const {calendars, getBackProps} = props;
-  return (
-    <Fragment>
-      <Button
-        {...getBackProps({
-          calendars,
-          offset: 12,
-        })}
-        variant="ghost"
-        size="sm"
-      >
-        {'<<'}
-      </Button>
-      <Button {...getBackProps({calendars})} variant="ghost" size="sm">
-        {'<'}
-      </Button>
-    </Fragment>
-  );
+type Props = {
+  date?: CalendarDate;
+  onDateChange: (date: CalendarDate) => void;
 };
 
-const DatepickerForwardButtons = (props: DatepickerForwardButtonsProps) => {
-  const {calendars, getForwardProps} = props;
-  return (
-    <Fragment>
-      <Button {...getForwardProps({calendars})} variant="ghost" size="sm">
-        {'>'}
-      </Button>
-      <Button
-        {...getForwardProps({
-          calendars,
-          offset: 12,
-        })}
-        variant="ghost"
-        size="sm"
-      >
-        {'>>'}
-      </Button>
-    </Fragment>
-  );
-};
+export const Datepicker: FC<Props> = ({date, onDateChange}) => {
+  const [value, setValue] = React.useState('');
 
-const DatepickerCalendar = (
-  props: RenderProps & {configs: DatepickerConfigs}
-) => {
-  const {calendars, getDateProps, getBackProps, getForwardProps, configs} =
-    props;
+  const {isOpen, onOpen, onClose} = useDisclosure();
 
-  if (isEmpty(calendars)) {
-    return null;
-  }
+  const initialRef = React.useRef(null);
+  const calendarRef = React.useRef(null);
 
-  return (
-    <HStack className="datepicker-calendar">
-      {calendars.map(calendar => {
-        return (
-          <VStack key={`${calendar.month}${calendar.year}`}>
-            <HStack>
-              <DatepickerBackButtons
-                calendars={calendars}
-                getBackProps={getBackProps}
-              />
-              <Heading size="sm" textAlign="center">
-                {configs.monthNames[calendar.month]} {calendar.year}
-              </Heading>
-              <DatepickerForwardButtons
-                calendars={calendars}
-                getForwardProps={getForwardProps}
-              />
-            </HStack>
-            <Divider />
-            <SimpleGrid columns={7} spacing={2} textAlign="center">
-              {configs.dayNames.map(day => (
-                <Box key={`${calendar.month}${calendar.year}${day}`}>
-                  <Text fontSize="sm" fontWeight="semibold">
-                    {day}
-                  </Text>
-                </Box>
-              ))}
-              {calendar.weeks.map((week, weekIndex) => {
-                return week
-                  .filter(date => isDateObj(date))
-                  .map(date => date as DateObj)
-                  .map((dateObj, index) => {
-                    const {
-                      date,
-                      today,
-                      // prevMonth,
-                      // nextMonth,
-                      selected,
-                    } = dateObj;
-                    const key = `${calendar.month}${calendar.year}${weekIndex}${index}`;
+  const handleSelectDate = (date: CalendarDate) => {
+    onDateChange(date);
+    setValue(() => (isValid(date) ? format(date, 'yyyy-MM-dd') : ''));
+    onClose();
+  };
 
-                    return (
-                      <Button
-                        {...getDateProps({
-                          dateObj,
-                          // disabled: isDisabled
-                        })}
-                        key={key}
-                        size="sm"
-                        variant="outline"
-                        borderColor={today ? 'purple.400' : 'transparent'}
-                        bg={selected ? 'purple.200' : undefined}
-                      >
-                        {date.getDate()}
-                      </Button>
-                    );
-                  });
-              })}
-            </SimpleGrid>
-          </VStack>
-        );
-      })}
-    </HStack>
-  );
-};
+  const match = (value: string) => value.match(/(\d{4})-(\d{2})-(\d{2})/);
 
-export const Datepicker: FC<DatepickerProps> = ({
-  configs = {
-    dateFormat: DATE_FORMAT_DEFAULT,
-    monthNames: MONTH_NAMES_DEFAULT,
-    dayNames: DAY_NAMES_DEFAULT,
-  },
-  ...props
-}) => {
-  const {date, name, disabled, onDateChange, id} = props;
+  const handleInputChange = ({target}: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(target.value);
 
-  const ref = useRef<HTMLElement>(null);
-  const initialFocusRef = useRef<HTMLInputElement>(null);
-  const [popoverOpen, setPopoverOpen] = useState(false);
-
-  const icon: ReactNode = <CalendarIcon fontSize="sm" />;
-
-  useOutsideClick({
-    ref: ref,
-    handler: () => setPopoverOpen(false),
-  });
-
-  const onDateSelected = (options: {selectable: boolean; date: Date}) => {
-    const {selectable, date} = options;
-    if (!selectable) return;
-    if (date !== null && date !== undefined) {
-      onDateChange(date);
-      setPopoverOpen(false);
-      return;
+    if (match(target.value)) {
+      onClose();
     }
   };
 
-  const dayzedData = useDayzed({
-    showOutsideDays: true,
-    onDateSelected,
-    selected: date,
+  useOutsideClick({
+    ref: calendarRef,
+    handler: onClose,
+    enabled: isOpen,
   });
 
+  React.useEffect(() => {
+    if (date) {
+      setValue(format(date, 'yyyy-MM-dd'));
+    } else {
+      setValue('');
+    }
+  }, [date]);
+
+  React.useEffect(() => {
+    if (match(value)) {
+      const date = new Date(value);
+
+      return onDateChange(date);
+    }
+  }, [value]);
+
   return (
-    <Popover
-      placement="bottom-start"
-      variant="responsive"
-      isOpen={popoverOpen}
-      onClose={() => setPopoverOpen(false)}
-      initialFocusRef={initialFocusRef}
-      isLazy
-    >
-      <PopoverTrigger>
-        <InputGroup>
-          <InputComponent
-            id={id}
-            autoComplete="off"
-            background="white"
-            isDisabled={disabled}
-            ref={initialFocusRef}
-            onClick={() => setPopoverOpen(!popoverOpen)}
-            name={name}
-            value={format(date, configs.dateFormat)}
-            onChange={e => e.target.value}
-          />
-          <InputRightElement color="gray.500">{icon}</InputRightElement>
-        </InputGroup>
-      </PopoverTrigger>
-      <PopoverContent ref={ref}>
-        <PopoverBody
-          padding={'10px 5px'}
-          borderWidth={1}
-          borderColor="blue.400"
+    <>
+      <Popover
+        placement="auto-start"
+        isOpen={isOpen}
+        onClose={onClose}
+        initialFocusRef={initialRef}
+        isLazy
+      >
+        <PopoverTrigger>
+          <Box onClick={onOpen} ref={initialRef}>
+            <Input
+              placeholder="yyyy-MM-dd"
+              w="min-content"
+              value={value}
+              onChange={handleInputChange}
+            />
+          </Box>
+        </PopoverTrigger>
+
+        <PopoverContent
+          p={0}
+          w="min-content"
+          border="none"
+          outline="none"
+          _focus={{boxShadow: 'none'}}
+          ref={calendarRef}
         >
-          <DatepickerCalendar {...dayzedData} configs={configs} />
-        </PopoverBody>
-      </PopoverContent>
-    </Popover>
+          <Calendar
+            value={{start: date}}
+            onSelectDate={date => handleSelectDate(date as CalendarDate)}
+            singleDateSelection
+            highlightToday
+            disableFutureDates
+          >
+            <PopoverBody p={0}>
+              <CalendarControls>
+                <CalendarPrevButton />
+                <CalendarNextButton />
+              </CalendarControls>
+
+              <CalendarMonths>
+                <CalendarMonth>
+                  <CalendarMonthName />
+                  <CalendarWeek />
+                  <CalendarDays />
+                </CalendarMonth>
+              </CalendarMonths>
+            </PopoverBody>
+          </Calendar>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 };

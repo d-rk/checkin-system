@@ -59,6 +59,12 @@ export const useCheckInList = (
   );
 };
 
+export const useUserCheckInList = (
+  userId: number
+): SWRResponse<CheckIn[], Error> => {
+  return useSWR<CheckIn[], Error>(`/api/v1/users/${userId}/checkins`, fetcher);
+};
+
 export const createWebsocket = (
   listener: (payload: any) => void
 ): Websocket => {
