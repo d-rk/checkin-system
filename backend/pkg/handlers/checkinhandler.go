@@ -13,7 +13,7 @@ import (
 )
 
 type CheckInHandler struct {
-	db *sqlx.DB
+	db        *sqlx.DB
 	websocket *websocket.Server
 }
 
@@ -60,8 +60,6 @@ func (h *CheckInHandler) ListCheckInsPerDay(c *gin.Context) {
 	c.JSON(http.StatusOK, checkIns)
 }
 
-
-
 func (h *CheckInHandler) ListUserCheckIns(c *gin.Context) {
 
 	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
@@ -88,7 +86,7 @@ func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
 		return
 	}
 
-	h.websocket.Publish(checkInRequest);
+	h.websocket.Publish(checkInRequest)
 
 	user, err := models.GetUserByRfidUid(h.db, checkInRequest.RFIDuid, -1)
 
@@ -99,6 +97,7 @@ func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
 
 	checkIn := models.CheckIn{
 		ID:        -1,
+		Date:      truncateToStartOfDay(time.Now()),
 		Timestamp: time.Now(),
 		UserID:    user.ID,
 	}
@@ -147,4 +146,19 @@ func (h *CheckInHandler) DeleteUserCheckIns(c *gin.Context) {
 	}
 
 	c.Writer.WriteHeader(http.StatusNoContent)
+}
+
+func (h *CheckInHandler) ListCheckInDates(c *gin.Context) {
+
+	dates, err := models.ListCheckInDates(h.db)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("unable to list dates: %s", err.Error())})
+		return
+	}
+
+	c.JSON(http.StatusOK, dates)
+}
+
+func truncateToStartOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }

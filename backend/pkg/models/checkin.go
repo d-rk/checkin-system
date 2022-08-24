@@ -12,6 +12,7 @@ import (
 
 type CheckIn struct {
 	ID        int64     `db:"id" json:"id"`
+	Date      time.Time `db:"date" json:"date"`
 	Timestamp time.Time `db:"timestamp" json:"timestamp"`
 	UserID    int64     `db:"user_id" json:"user_id"`
 }
@@ -19,6 +20,10 @@ type CheckIn struct {
 type CheckInWithUser struct {
 	CheckIn
 	User User `db:"user" json:"user"`
+}
+
+type CheckInDate struct {
+	Date      time.Time `db:"date" json:"date"`
 }
 
 func ListCheckIns(db *sqlx.DB) ([]CheckIn, error) {
@@ -32,7 +37,7 @@ func ListCheckIns(db *sqlx.DB) ([]CheckIn, error) {
 	return checkIns, nil
 }
 
-func ListCheckInsPerDay(db *sqlx.DB, day time.Time) ([]CheckInWithUser, error) {
+func ListCheckInsPerDay(db *sqlx.DB, date time.Time) ([]CheckInWithUser, error) {
 
 	checkIns := []CheckInWithUser{}
 
@@ -44,8 +49,8 @@ func ListCheckInsPerDay(db *sqlx.DB, day time.Time) ([]CheckInWithUser, error) {
 			users.updated_at "user.updated_at",
 			users.rfid_uid "user.rfid_uid"
 			FROM checkins JOIN users ON checkins.user_id = users.id
-			WHERE checkins.timestamp >= $1 and checkins.timestamp < $1 + interval '1 day'
-			ORDER BY checkins.timestamp ASC`, day); err != nil {
+			WHERE checkins.date = $1
+			ORDER BY checkins.timestamp ASC`, date); err != nil {
 		return nil, fmt.Errorf("unable to query checkins: %s", err.Error())
 	}
 
@@ -96,8 +101,8 @@ func DeleteCheckInsByUserID(db *sqlx.DB, ctx context.Context, userID int64) erro
 func (checkIn *CheckIn) Save(db *sqlx.DB, ctx context.Context) (*CheckIn, error) {
 
 	insertStatement, err := db.PrepareNamedContext(ctx, `INSERT INTO checkins
-		(timestamp, user_id) VALUES
-		(:timestamp, :user_id) RETURNING id`)
+		(date, timestamp, user_id) VALUES
+		(:date, :timestamp, :user_id) RETURNING id`)
 
 	if err != nil {
 		return nil, err
@@ -114,4 +119,15 @@ func (checkIn *CheckIn) Save(db *sqlx.DB, ctx context.Context) (*CheckIn, error)
 	}
 
 	return checkIn, nil
+}
+
+func ListCheckInDates(db *sqlx.DB) ([]CheckInDate, error) {
+
+	dates := []CheckInDate{}
+
+	if err := db.Select(&dates, "SELECT distinct date as date FROM checkins"); err != nil {
+		return nil, errors.New("no checkIn dates found")
+	}
+
+	return dates, nil
 }

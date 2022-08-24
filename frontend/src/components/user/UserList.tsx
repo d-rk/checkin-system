@@ -65,7 +65,7 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
           {users.length === 0 && (
             <Tr>
               <Td isNumeric></Td>
-              <Td>NO USERS FOUND</Td>
+              <Td>-</Td>
               <Td></Td>
               <Td></Td>
             </Tr>

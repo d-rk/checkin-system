@@ -40,6 +40,7 @@ func main() {
 	api.POST("/checkins", checkInHandler.AddCheckIn)
 	api.DELETE("/checkins/:id", checkInHandler.DeleteCheckIn)
 
+	api.GET("/checkins/dates", checkInHandler.ListCheckInDates)
 
 
 	r.GET("/websocket", websocketHandler)
