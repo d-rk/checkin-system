@@ -1,28 +1,42 @@
 import {Button} from '@chakra-ui/button';
-import {Box, Circle, Text} from '@chakra-ui/react';
+import {Box, Circle, Text, useToast} from '@chakra-ui/react';
 import {useCalendarDay} from '@uselessdev/datepicker';
 import {format} from 'date-fns';
 import React from 'react';
+import {useCheckInDates} from '../../api/checkInSystemApi';
+import {errorToast} from '../../utils/toast';
 
 export const CheckInDay = () => {
-  const {day, onSelectDates, isSelected, isInRange} = useCalendarDay();
+  const toast = useToast();
+  const {day, onSelectDates, isSelected, isDisabled} = useCalendarDay();
 
-  const selected = isSelected
+  const {data, error} = useCheckInDates();
+
+  if (error) {
+    toast(errorToast('unable to fetch checkin dates', error));
+  }
+
+  const dates = data ? data.map(d => new Date(d.date).toDateString()) : [];
+
+  const hasCheckIns = dates.includes(new Date(day).toDateString());
+  const isToday = new Date(day).toDateString() === new Date().toDateString();
+
+  const today = isToday
     ? {
-        bgColor: 'teal.400',
-        color: 'white',
-        rounded: 0,
+        bgColor: 'gray.300',
+        color: 'black',
+        rounded: 4,
         _hover: {
-          bgColor: 'teal.300',
+          bgColor: 'gray.100',
         },
       }
     : {};
 
-  const range = isInRange
+  const withCheckins = hasCheckIns
     ? {
         bgColor: 'teal.300',
         color: 'white',
-        rounded: 'none',
+        rounded: 4,
         _hover: {
           bgColor: 'teal.200',
         },
@@ -32,17 +46,11 @@ export const CheckInDay = () => {
   return (
     <Button
       variant="ghost"
+      disabled={isDisabled}
       onClick={() => onSelectDates(day)}
-      sx={{...selected, ...range}}
+      sx={{...today, ...withCheckins}}
     >
-      {new Date(day).getDate() < 8 ? (
-        <Box flexDirection="column" alignItems="center">
-          <Text>{format(day, 'd')}</Text>
-          <Circle size="4px" bgColor="pink.300" />
-        </Box>
-      ) : (
-        format(day, 'd')
-      )}
+      {format(day, 'd')}
     </Button>
   );
 };

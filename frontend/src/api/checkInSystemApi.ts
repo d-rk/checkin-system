@@ -29,6 +29,10 @@ export type CheckInMessage = {
   check_in?: CheckIn;
 };
 
+export type CheckInDate = {
+  date: string;
+};
+
 export const isCheckInMessage = (message: any): message is CheckInMessage => {
   return (message as CheckInMessage).rfid_uid !== undefined;
 };
@@ -68,6 +72,10 @@ export const useCheckInList = (
     `/api/v1/checkins/per-day?day=${format(date, 'yyyy-MM-dd')}`,
     fetcher
   );
+};
+
+export const useCheckInDates = (): SWRResponse<CheckInDate[], Error> => {
+  return useSWR<CheckInDate[], Error>('/api/v1/checkins/dates', fetcher);
 };
 
 export const downloadCheckInList = async (date: Date) => {

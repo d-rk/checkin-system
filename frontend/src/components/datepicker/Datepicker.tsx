@@ -22,6 +22,7 @@ import {
 } from '@uselessdev/datepicker';
 import {format, isValid} from 'date-fns';
 import React, {FC} from 'react';
+import {CheckInDay} from './CheckInDay';
 
 type Props = {
   date?: CalendarDate;
@@ -119,7 +120,9 @@ export const Datepicker: FC<Props> = ({date, onDateChange}) => {
                 <CalendarMonth>
                   <CalendarMonthName />
                   <CalendarWeek />
-                  <CalendarDays />
+                  <CalendarDays>
+                    <CheckInDay />
+                  </CalendarDays>
                 </CalendarMonth>
               </CalendarMonths>
             </PopoverBody>
