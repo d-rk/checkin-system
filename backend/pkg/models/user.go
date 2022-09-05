@@ -11,11 +11,11 @@ import (
 )
 
 type User struct {
-	ID        int64     `db:"id" json:"id"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt null.Time `db:"updated_at" json:"updated_at"`
-	Name      string    `db:"name" json:"name"`
-	RFIDuid   string    `db:"rfid_uid" json:"rfid_uid"`
+	ID        int64     `db:"id" json:"id" csv:"-"`
+	CreatedAt time.Time `db:"created_at" json:"created_at" csv:"-"`
+	UpdatedAt null.Time `db:"updated_at" json:"updated_at" csv:"-"`
+	Name      string    `db:"name" json:"name"  csv:"name"`
+	RFIDuid   string    `db:"rfid_uid" json:"rfid_uid" csv:"rfid_uid"`
 }
 
 func ListUsers(db *sqlx.DB) ([]User, error) {

@@ -5,6 +5,7 @@ import {useParams} from 'react-router-dom';
 import {Websocket} from 'websocket-ts/lib';
 import {
   createWebsocket,
+  downloadCheckInList,
   isCheckInMessage,
   useCheckInList,
 } from '../api/checkInSystemApi';
@@ -46,6 +47,10 @@ export const CheckInListPage: FC = () => {
     return null;
   }
 
+  const handleDownload = () => {
+    downloadCheckInList(date);
+  };
+
   if (error) {
     toast(errorToast('unable to list checkIns', error));
   }
@@ -57,7 +62,11 @@ export const CheckInListPage: FC = () => {
   return (
     <Center>
       <Box>
-        <CheckInFilter date={date} onDateChange={onDateChange} />
+        <CheckInFilter
+          date={date}
+          onDateChange={onDateChange}
+          onDownload={handleDownload}
+        />
         <CheckInList checkIns={checkIns ?? []} />
       </Box>
     </Center>

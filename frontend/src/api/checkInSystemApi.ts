@@ -1,5 +1,6 @@
 import axios, {AxiosResponse} from 'axios';
 import {format} from 'date-fns';
+import FileDownload from 'js-file-download';
 import useSWR, {SWRResponse} from 'swr';
 import {Websocket, WebsocketBuilder} from 'websocket-ts';
 
@@ -69,10 +70,27 @@ export const useCheckInList = (
   );
 };
 
+export const downloadCheckInList = async (date: Date) => {
+  const response = await axios.get(
+    `/api/v1/checkins/per-day?day=${format(date, 'yyyy-MM-dd')}`,
+    {
+      headers: {Accept: 'application/csv'},
+    }
+  );
+  FileDownload(response.data, response.headers['x-filename'] ?? 'export.csv');
+};
+
 export const useUserCheckInList = (
   userId: number
 ): SWRResponse<CheckIn[], Error> => {
   return useSWR<CheckIn[], Error>(`/api/v1/users/${userId}/checkins`, fetcher);
+};
+
+export const downloadUserCheckInList = async (userId: number) => {
+  const response = await axios.get(`/api/v1/users/${userId}/checkins`, {
+    headers: {Accept: 'application/csv'},
+  });
+  FileDownload(response.data, response.headers['x-filename'] ?? 'export.csv');
 };
 
 export const createWebsocket = (

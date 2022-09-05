@@ -11,7 +11,9 @@ require (
 )
 
 require (
+	github.com/flytam/filenamify v1.1.1 // indirect
 	github.com/gin-contrib/timeout v0.0.3 // indirect
+	github.com/gocarina/gocsv v0.0.0-20220823132111-71f3a5cb2654 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 )
 

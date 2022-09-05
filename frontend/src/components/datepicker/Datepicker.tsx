@@ -84,7 +84,7 @@ export const Datepicker: FC<Props> = ({date, onDateChange}) => {
         isLazy
       >
         <PopoverTrigger>
-          <Box onClick={onOpen} ref={initialRef}>
+          <Box onClick={onOpen} ref={initialRef} p="4">
             <Input
               placeholder="yyyy-MM-dd"
               w="min-content"

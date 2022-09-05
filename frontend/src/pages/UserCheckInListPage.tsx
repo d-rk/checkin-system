@@ -13,6 +13,7 @@ import {useParams} from 'react-router-dom';
 import {Websocket} from 'websocket-ts/lib';
 import {
   createWebsocket,
+  downloadUserCheckInList,
   getUser,
   isCheckInMessage,
   User,
@@ -53,6 +54,10 @@ export const UserCheckInListPage: FC = () => {
     })
   );
 
+  const handleDownload = () => {
+    downloadUserCheckInList(user!.id);
+  };
+
   if (error) {
     toast(errorToast('unable to list checkIns', error));
   }
@@ -71,6 +76,7 @@ export const UserCheckInListPage: FC = () => {
               aria-label="Download .csv"
               title="Download .csv"
               icon={<DownloadIcon />}
+              onClick={handleDownload}
             />
           </Box>
         </Flex>

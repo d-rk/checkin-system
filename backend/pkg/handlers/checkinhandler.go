@@ -8,7 +8,9 @@ import (
 
 	"github.com/d-rk/checkin-system/pkg/models"
 	"github.com/d-rk/checkin-system/pkg/services/websocket"
+	"github.com/flytam/filenamify"
 	"github.com/gin-gonic/gin"
+	"github.com/gocarina/gocsv"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -62,7 +64,14 @@ func (h *CheckInHandler) ListCheckInsPerDay(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, checkIns)
+	switch c.Request.Header.Get("Accept") {
+	case "application/csv":
+		writeCSV(c, fmt.Sprintf("%s.csv", dayParam), checkIns)
+	case "application/json":
+		fallthrough
+	default:
+		c.JSON(http.StatusOK, checkIns)
+	}
 }
 
 func (h *CheckInHandler) ListUserCheckIns(c *gin.Context) {
@@ -79,7 +88,22 @@ func (h *CheckInHandler) ListUserCheckIns(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, checkIns)
+	switch c.Request.Header.Get("Accept") {
+	case "application/csv":
+
+		user, err := models.GetUserByID(h.db, userID)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("user not found: %s", err.Error())})
+			return
+		}
+
+		writeCSV(c, fmt.Sprintf("%s.csv", user.Name), checkIns)
+
+	case "application/json":
+		fallthrough
+	default:
+		c.JSON(http.StatusOK, checkIns)
+	}
 }
 
 func (h *CheckInHandler) AddCheckIn(c *gin.Context) {
@@ -171,4 +195,22 @@ func (h *CheckInHandler) ListCheckInDates(c *gin.Context) {
 
 func truncateToStartOfDay(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+}
+
+func writeCSV(c *gin.Context, filename string, data interface{}) {
+
+	saneFilename, err := filenamify.Filenamify(filename, filenamify.Options{
+		Replacement: "_",
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("internal error: %s", err.Error())})
+	}
+
+	err = gocsv.Marshal(data, c.Writer)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("internal error: %s", err.Error())})
+	}
+
+	c.Writer.Header().Add("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, saneFilename))
+	c.Writer.Header().Add("X-Filename", saneFilename)
 }

@@ -6,9 +6,10 @@ import {Datepicker} from '../datepicker/Datepicker';
 type Props = {
   date?: Date;
   onDateChange: (date: Date) => void;
+  onDownload: () => void;
 };
 
-export const CheckInFilter: FC<Props> = ({date, onDateChange}) => {
+export const CheckInFilter: FC<Props> = ({date, onDateChange, onDownload}) => {
   return (
     <Flex>
       <Datepicker
@@ -22,6 +23,7 @@ export const CheckInFilter: FC<Props> = ({date, onDateChange}) => {
           aria-label="Download .csv"
           title="Download .csv"
           icon={<DownloadIcon />}
+          onClick={onDownload}
         />
       </Box>
     </Flex>

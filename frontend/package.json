@@ -67,6 +67,7 @@
     "axios": "^0.27.2",
     "date-fns": "^2.29.2",
     "date-fns-tz": "^1.3.6",
+    "js-file-download": "^0.4.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.34.2",
