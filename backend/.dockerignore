@@ -1,0 +1,8 @@
+Dockerfile
+.dockerignore
+
+checkin-system
+
+.vscode
+.idea
+.env
