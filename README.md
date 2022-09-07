@@ -1,5 +1,9 @@
 # checkin-system
 
+over-engineered checkin-system that can be deployed to a raspberry pi.
+
+![Raspi Board](.github/images/raspi.jpg)
+
 ## installation
 
 ### run in docker
