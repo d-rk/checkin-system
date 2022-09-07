@@ -56,3 +56,44 @@ go run .
 cd frontend
 npm start
 ```
+
+## raspi setup
+
+Install dependencies:
+
+```
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install build-essential git python3-dev python3-pip python3-smbus i2c-tools
+sudo pip3 install spidev mfrc522
+```
+
+Configure interfaces:
+
+```
+sudo raspi-config
+```
+
+- [enable spi interface](https://www.raspberrypi-spy.co.uk/2014/08/enabling-the-spi-interface-on-the-raspberry-pi/)
+- [enable i2c interface](https://www.raspberrypi-spy.co.uk/2014/11/enabling-the-i2c-interface-on-the-raspberry-pi/)
+
+Install docker:
+
+```
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+
+sudo usermod -aG docker $USER
+newgrp docker
+
+sudo pip3 install docker-compose
+```
+
+## raspi shield
+
+The shield can be build based on the following schematic:
+
+![Fritzing](.github/images/fritzing.png)
+
+Download the [Fritzing File](raspi/fritzing/rfid_reader.fzz).
