@@ -60,6 +60,8 @@ services:
     image: quay.io/d_rk/checkin-system-reader
     restart: unless-stopped
     privileged: true
+    environment:
+      - API_BASEURL=http://backend:8080
     links:
       - backend
     networks:

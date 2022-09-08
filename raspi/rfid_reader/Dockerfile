@@ -10,7 +10,7 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y build-essential git python3-dev python3-pip python3-smbus && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install spidev mfrc522
+RUN pip install spidev mfrc522 requests
 
 COPY rfid_reader.py ./
 
