@@ -42,7 +42,7 @@ services:
       dockerfile: "Dockerfile"
     image: quay.io/d_rk/checkin-system-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
       - ./:/backend
 

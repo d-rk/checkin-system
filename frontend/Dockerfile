@@ -1,13 +1,16 @@
-FROM node:17.9.1-alpine
-
+# build environment
+FROM node:17.9.1-alpine as build
 WORKDIR /app
-
+ENV PATH /app/node_modules/.bin:$PATH
 COPY package.json ./
-
-RUN npm install
-
+COPY package-lock.json ./
+RUN npm ci --silent
+RUN npm install react-scripts@5.0.1 -g --silent
 COPY . ./
+RUN npm run build
 
-EXPOSE 3000
-
-CMD ["npm", "start"]
+# production environment
+FROM nginx:stable-alpine
+COPY --from=build /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
