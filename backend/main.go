@@ -43,7 +43,7 @@ func main() {
 	api.GET("/checkins/dates", checkInHandler.ListCheckInDates)
 
 
-	r.GET("/websocket", websocketHandler)
+	api.GET("/websocket", websocketHandler)
 
 	r.Run(":8080")
 }

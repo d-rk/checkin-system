@@ -1,5 +1,5 @@
 import {Button} from '@chakra-ui/button';
-import {Box, Circle, Text, useToast} from '@chakra-ui/react';
+import {useToast} from '@chakra-ui/react';
 import {useCalendarDay} from '@uselessdev/datepicker';
 import {format} from 'date-fns';
 import React from 'react';
@@ -8,7 +8,7 @@ import {errorToast} from '../../utils/toast';
 
 export const CheckInDay = () => {
   const toast = useToast();
-  const {day, onSelectDates, isSelected, isDisabled} = useCalendarDay();
+  const {day, onSelectDates, isDisabled} = useCalendarDay();
 
   const {data, error} = useCheckInDates();
 

@@ -3,6 +3,7 @@ import {format} from 'date-fns';
 import FileDownload from 'js-file-download';
 import useSWR, {SWRResponse} from 'swr';
 import {Websocket, WebsocketBuilder} from 'websocket-ts';
+import {WEBSOCKET_BASE_URL} from './config';
 
 export type UserFields = {
   name: string;
@@ -104,7 +105,7 @@ export const downloadUserCheckInList = async (userId: number) => {
 export const createWebsocket = (
   listener: (payload: any) => void
 ): Websocket => {
-  return new WebsocketBuilder('ws://localhost:8080/websocket')
+  return new WebsocketBuilder(`${WEBSOCKET_BASE_URL}/api/v1/websocket`)
     .onOpen(() => {
       console.log('opened');
     })
