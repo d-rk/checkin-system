@@ -9,7 +9,13 @@ over-engineered checkin-system that can be deployed to a raspberry pi.
 ### run in docker
 
 ```shell
-docker-compose build
+# build images yourself
+docker-compose build --pull
+
+# or pull them
+docker-compose pull
+
+# bring up the containers
 docker-compose up -d
 ```
 
@@ -50,7 +56,15 @@ cd backend
 go run .
 ```
 
-4. Run frontend
+4. Create an `.env` file for the frontend
+
+```
+cat > frontend/.env <<- EOM
+REACT_APP_API_BASE_URL=http://localhost:8080
+EOM
+```
+
+5. Run frontend
 
 ```
 cd frontend

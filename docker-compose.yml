@@ -3,7 +3,7 @@ services:
   # postgres
   db:
     image: postgres:14.1-alpine
-    restart: always
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
+    networks:
+      - checkin-system-network
 
   # backend
   backend:
@@ -19,8 +21,7 @@ services:
       context: ./backend
       dockerfile: "Dockerfile"
     image: quay.io/d_rk/checkin-system-backend
-    depends_on:
-      - db
+    restart: unless-stopped
     links:
       - db
     ports:
@@ -34,6 +35,8 @@ services:
       - DB_PORT=5432
       - DB_SSL_MODE=disable
       - CORS_ALLOWED_ORIGINS=*
+    networks:
+      - checkin-system-network
 
   # frontend
   frontend:
@@ -41,12 +44,19 @@ services:
       context: ./frontend
       dockerfile: "Dockerfile"
     image: quay.io/d_rk/checkin-system-frontend
+    restart: unless-stopped
+    links:
+      - backend
     ports:
       - "3000:80"
-    volumes:
-      - ./:/backend
+    networks:
+      - checkin-system-network
 
 # volume for db data
 volumes:
   db:
     driver: local
+
+networks:
+  checkin-system-network:
+    driver: bridge
