@@ -52,6 +52,18 @@ services:
     networks:
       - checkin-system-network
 
+  # rfid-reader
+  rfid-reader:
+    build:
+      context: ./raspi/rfid_reader
+      dockerfile: "Dockerfile"
+    image: quay.io/d_rk/checkin-system-reader
+    restart: unless-stopped
+    privileged: true
+    links:
+      - backend
+    networks:
+      - checkin-system-network
 # volume for db data
 volumes:
   db:
