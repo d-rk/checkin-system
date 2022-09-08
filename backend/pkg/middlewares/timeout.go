@@ -5,23 +5,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/timeout"
 	"github.com/gin-gonic/gin"
+	timeout "github.com/vearne/gin-timeout"
 )
-
-func timeoutResponse(timeoutDuration time.Duration) func(*gin.Context) {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusRequestTimeout, gin.H{"error": fmt.Sprintf("request aborted after %v", timeoutDuration)})
-	}
-}
 
 func TimeoutMiddleware(timeoutDuration time.Duration) gin.HandlerFunc {
 
-	return timeout.New(
+	defaultMsg := fmt.Sprintf(`{"error": "request aborted after %v"}`, timeoutDuration)
+
+	return timeout.Timeout(
 		timeout.WithTimeout(timeoutDuration),
-		timeout.WithHandler(func(c *gin.Context) {
-			c.Next()
-		}),
-		timeout.WithResponse(timeoutResponse(timeoutDuration)),
-	)
+		timeout.WithErrorHttpCode(http.StatusRequestTimeout),
+		timeout.WithDefaultMsg(defaultMsg))
 }

@@ -42,7 +42,6 @@ func main() {
 
 	api.GET("/checkins/dates", checkInHandler.ListCheckInDates)
 
-
 	api.GET("/websocket", websocketHandler)
 
 	r.Run(":8080")

@@ -3,18 +3,15 @@ module github.com/d-rk/checkin-system
 go 1.19
 
 require (
+	github.com/flytam/filenamify v1.1.1
 	github.com/gin-gonic/gin v1.8.1
+	github.com/gocarina/gocsv v0.0.0-20220823132111-71f3a5cb2654
+	github.com/gorilla/websocket v1.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/joho/godotenv v1.4.0
 	github.com/lib/pq v1.10.6
 	github.com/rubenv/sql-migrate v1.1.2
-)
-
-require (
-	github.com/flytam/filenamify v1.1.1 // indirect
-	github.com/gin-contrib/timeout v0.0.3 // indirect
-	github.com/gocarina/gocsv v0.0.0-20220823132111-71f3a5cb2654 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/vearne/gin-timeout v0.1.1
 )
 
 require (
