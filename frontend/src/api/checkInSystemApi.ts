@@ -2,7 +2,7 @@ import axios, {AxiosResponse} from 'axios';
 import {format} from 'date-fns';
 import FileDownload from 'js-file-download';
 import useSWR, {SWRResponse} from 'swr';
-import {Websocket, WebsocketBuilder} from 'websocket-ts';
+import {ExponentialBackoff, Websocket, WebsocketBuilder} from 'websocket-ts';
 import {WEBSOCKET_BASE_URL} from './config';
 
 export type UserFields = {
@@ -105,15 +105,17 @@ export const downloadUserCheckInList = async (userId: number) => {
 export const createWebsocket = (
   listener: (payload: any) => void
 ): Websocket => {
-  return new WebsocketBuilder(`${WEBSOCKET_BASE_URL}/api/v1/websocket`)
+  console.log(`using websocket: ${WEBSOCKET_BASE_URL}/websocket`);
+  return new WebsocketBuilder(`${WEBSOCKET_BASE_URL}/websocket`)
+    .withBackoff(new ExponentialBackoff(100, 7))
     .onOpen(() => {
       console.log('opened');
     })
-    .onClose(() => {
-      console.log('closed');
+    .onClose((_, ev: Event) => {
+      console.log('closed' + JSON.stringify(ev));
     })
-    .onError(() => {
-      console.log('error');
+    .onError((_, ev: Event) => {
+      console.log('error:' + JSON.stringify(ev));
     })
     .onMessage((_, ev) => {
       const payload = JSON.parse(ev.data);

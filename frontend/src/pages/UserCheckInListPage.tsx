@@ -10,7 +10,6 @@ import {
 } from '@chakra-ui/react';
 import React, {FC, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {Websocket} from 'websocket-ts/lib';
 import {
   createWebsocket,
   downloadUserCheckInList,
@@ -44,14 +43,16 @@ export const UserCheckInListPage: FC = () => {
     mutate,
   } = useUserCheckInList(userId ? +userId : -1);
 
-  React.useState<Websocket>(
-    createWebsocket((payload: any) => {
-      if (isCheckInMessage(payload) && payload.check_in) {
-        if (payload.check_in.user_id === user?.id) {
-          mutate();
+  React.useMemo(
+    () =>
+      createWebsocket((payload: any) => {
+        if (isCheckInMessage(payload) && payload.check_in) {
+          if (payload.check_in.user_id === user?.id) {
+            mutate();
+          }
         }
-      }
-    })
+      }),
+    []
   );
 
   const handleDownload = () => {

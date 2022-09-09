@@ -10,7 +10,6 @@ import {
 } from '@chakra-ui/react';
 import React, {FC} from 'react';
 import {useForm} from 'react-hook-form';
-import {Websocket} from 'websocket-ts/lib/websocket';
 import {
   createWebsocket,
   isCheckInMessage,
@@ -38,12 +37,14 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
 
   const [rfidViaWebsocket, setRfidViaWebsocket] = React.useState(true);
 
-  React.useState<Websocket>(
-    createWebsocket((payload: any) => {
-      if (rfidViaWebsocket && isCheckInMessage(payload)) {
-        setValue('rfid_uid', payload.rfid_uid);
-      }
-    })
+  React.useMemo(
+    () =>
+      createWebsocket((payload: any) => {
+        if (rfidViaWebsocket && isCheckInMessage(payload)) {
+          setValue('rfid_uid', payload.rfid_uid);
+        }
+      }),
+    []
   );
 
   const toggleRfidViaWebsocket = () => {
