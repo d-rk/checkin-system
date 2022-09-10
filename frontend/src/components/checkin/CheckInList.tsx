@@ -1,4 +1,6 @@
+import {DeleteIcon} from '@chakra-ui/icons';
 import {
+  IconButton,
   Table,
   TableCaption,
   TableContainer,
@@ -14,24 +16,24 @@ import {CheckInWithUser} from '../../api/checkInSystemApi';
 
 type Props = {
   checkIns: CheckInWithUser[];
+  onDelete: (checkinId: number) => Promise<void>;
 };
 
-const CheckInList: FC<Props> = ({checkIns}) => {
+const CheckInList: FC<Props> = ({checkIns, onDelete}) => {
   return (
     <TableContainer>
       <Table>
         <TableCaption>CheckIns</TableCaption>
         <Thead>
           <Tr>
-            <Th isNumeric>ID</Th>
             <Th>Time</Th>
             <Th>User</Th>
+            <Th textAlign="right">Actions</Th>
           </Tr>
         </Thead>
         <Tbody>
           {checkIns.map(checkIn => (
             <Tr key={checkIn.id}>
-              <Td isNumeric>{checkIn.id}</Td>
               <Td>
                 {formatInTimeZone(
                   new Date(checkIn.timestamp),
@@ -40,11 +42,19 @@ const CheckInList: FC<Props> = ({checkIns}) => {
                 )}
               </Td>
               <Td>{checkIn.user.name}</Td>
+              <Td textAlign="right">
+                <IconButton
+                  colorScheme="red"
+                  aria-label="Delete User"
+                  title="Delete User"
+                  icon={<DeleteIcon />}
+                  onClick={() => onDelete(checkIn.id)}
+                />
+              </Td>
             </Tr>
           ))}
           {checkIns.length === 0 && (
             <Tr>
-              <Td></Td>
               <Td>-</Td>
               <Td></Td>
             </Tr>

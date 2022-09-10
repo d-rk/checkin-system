@@ -47,9 +47,15 @@ export const UserCheckInListPage: FC = () => {
     () =>
       createWebsocket((payload: any) => {
         if (isCheckInMessage(payload) && payload.check_in) {
-          if (payload.check_in.user_id === user?.id) {
+          if (userId && payload.check_in.user_id === +userId) {
             mutate();
+          } else {
+            console.log(
+              `received checking for different user ${payload.check_in.user_id} != ${userId}`
+            );
           }
+        } else {
+          console.log(`received rfid without user: ${payload.rfid_uid}`);
         }
       }),
     []

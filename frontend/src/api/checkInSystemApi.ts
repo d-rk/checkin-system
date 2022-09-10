@@ -75,6 +75,10 @@ export const useCheckInList = (
   );
 };
 
+export const deleteCheckIn = (checkInId: number) => {
+  return axios.delete(`/api/v1/checkins/${checkInId}`);
+};
+
 export const useCheckInDates = (): SWRResponse<CheckInDate[], Error> => {
   return useSWR<CheckInDate[], Error>('/api/v1/checkins/dates', fetcher);
 };

@@ -1,9 +1,10 @@
 import {Box, Center, useToast} from '@chakra-ui/react';
-import {parse} from 'date-fns';
+import {format, parse} from 'date-fns';
 import React, {FC, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {
   createWebsocket,
+  deleteCheckIn,
   downloadCheckInList,
   isCheckInMessage,
   useCheckInList,
@@ -36,9 +37,18 @@ export const CheckInListPage: FC = () => {
     () =>
       createWebsocket((payload: any) => {
         if (isCheckInMessage(payload) && payload.check_in) {
-          if (new Date(payload.check_in.date).getTime() === date.getTime()) {
+          if (
+            format(new Date(payload.check_in.date), 'yyyy-MM-dd') ===
+            format(date, 'yyyy-MM-dd')
+          ) {
             mutate();
+          } else {
+            console.log(
+              `received checking for different date ${payload.check_in.date} != ${date}`
+            );
           }
+        } else {
+          console.log(`received rfid without user: ${payload.rfid_uid}`);
         }
       }),
     []
@@ -50,6 +60,18 @@ export const CheckInListPage: FC = () => {
 
   const handleDownload = () => {
     downloadCheckInList(date);
+  };
+
+  const onDeleteCheckIn = async (checkinId: number) => {
+    if (await confirm('Are you sure?')) {
+      try {
+        console.log(`delete checkin with id: ${checkinId}`);
+        await deleteCheckIn(checkinId);
+        mutate(checkIns?.filter(c => c.id !== checkinId));
+      } catch (error) {
+        toast(errorToast('unable to delete checkin', error));
+      }
+    }
   };
 
   if (error) {
@@ -68,7 +90,7 @@ export const CheckInListPage: FC = () => {
           onDateChange={onDateChange}
           onDownload={handleDownload}
         />
-        <CheckInList checkIns={checkIns ?? []} />
+        <CheckInList checkIns={checkIns ?? []} onDelete={onDeleteCheckIn} />
       </Box>
     </Center>
   );

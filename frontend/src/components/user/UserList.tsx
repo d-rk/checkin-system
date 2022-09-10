@@ -27,7 +27,6 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
         <TableCaption>Users</TableCaption>
         <Thead>
           <Tr>
-            <Th isNumeric>ID</Th>
             <Th>Name</Th>
             <Th>RFID UID</Th>
             <Th textAlign="right">Actions</Th>
@@ -36,7 +35,6 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
         <Tbody>
           {users.map(user => (
             <Tr key={user.id}>
-              <Td isNumeric>{user.id}</Td>
               <Td>{user.name}</Td>
               <Td>{user.rfid_uid}</Td>
               <Td textAlign="right">
@@ -64,7 +62,6 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
           ))}
           {users.length === 0 && (
             <Tr>
-              <Td isNumeric></Td>
               <Td>-</Td>
               <Td></Td>
               <Td></Td>

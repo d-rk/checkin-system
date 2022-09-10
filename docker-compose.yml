@@ -48,7 +48,7 @@ services:
     links:
       - backend
     ports:
-      - "3000:80"
+      - "80:80"
     networks:
       - checkin-system-network
 
