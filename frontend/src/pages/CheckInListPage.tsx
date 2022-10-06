@@ -47,8 +47,6 @@ export const CheckInListPage: FC = () => {
               `received checking for different date ${payload.check_in.date} != ${date}`
             );
           }
-        } else {
-          console.log(`received rfid without user: ${payload.rfid_uid}`);
         }
       }),
     []
@@ -78,16 +76,12 @@ export const CheckInListPage: FC = () => {
     toast(errorToast('unable to list checkIns', error));
   }
 
-  const onDateChange = (date: Date) => {
-    setDate(date);
-  };
-
   return (
     <Center>
       <Box>
         <CheckInFilter
           date={date}
-          onDateChange={onDateChange}
+          onDateChange={(date: Date) => setDate(date)}
           onDownload={handleDownload}
         />
         <CheckInList checkIns={checkIns ?? []} onDelete={onDeleteCheckIn} />
