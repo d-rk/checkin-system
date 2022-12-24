@@ -47,6 +47,7 @@ func ListCheckInsPerDay(db *sqlx.DB, date time.Time) ([]CheckInWithUser, error) 
 			users.name "user.name",
 			users.created_at "user.created_at",
 			users.updated_at "user.updated_at",
+			users.member_id "user.member_id",
 			users.rfid_uid "user.rfid_uid"
 			FROM checkins JOIN users ON checkins.user_id = users.id
 			WHERE checkins.date = $1

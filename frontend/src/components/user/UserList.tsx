@@ -28,6 +28,7 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
         <Thead>
           <Tr>
             <Th>Name</Th>
+            <Th>Member ID</Th>
             <Th>RFID UID</Th>
             <Th textAlign="right">Actions</Th>
           </Tr>
@@ -36,6 +37,7 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
           {users.map(user => (
             <Tr key={user.id}>
               <Td>{user.name}</Td>
+              <Td>{user.member_id}</Td>
               <Td>{user.rfid_uid}</Td>
               <Td textAlign="right">
                 <IconButton

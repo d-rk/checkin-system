@@ -32,6 +32,7 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
     defaultValues: {
       name: user?.name,
       rfid_uid: user?.rfid_uid,
+      member_id: user?.member_id,
     },
   });
 
@@ -66,6 +67,18 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
             <FormHelperText>Name to identify user</FormHelperText>
             <FormErrorMessage>
               {errors.name && errors.name.message}
+            </FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={errors?.member_id !== undefined}>
+            <FormLabel>Member ID</FormLabel>
+            <Input
+              {...register('member_id', {})}
+              placeholder="enter member id"
+            />
+            <FormHelperText>Member id of user</FormHelperText>
+            <FormErrorMessage>
+              {errors.member_id && errors.member_id.message}
             </FormErrorMessage>
           </FormControl>
 
