@@ -66,6 +66,7 @@ def post_rfid_id(id):
     GPIO.output(BUZZER_GPIO, GPIO.LOW)
     GPIO.output(LED_GREEN_GPIO, GPIO.LOW)
     GPIO.output(LED_RED_GPIO, GPIO.LOW)
+    sleep(2.0)
 
 
 wait_for_backend()
