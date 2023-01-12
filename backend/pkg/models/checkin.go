@@ -58,6 +58,26 @@ func ListCheckInsPerDay(db *sqlx.DB, date time.Time) ([]CheckInWithUser, error) 
 	return checkIns, nil
 }
 
+func ListAllCheckIns(db *sqlx.DB) ([]CheckInWithUser, error) {
+
+	checkIns := []CheckInWithUser{}
+
+	if err := db.Select(&checkIns, `SELECT
+			checkins.*,
+			users.id "user.id",
+			users.name "user.name",
+			users.created_at "user.created_at",
+			users.updated_at "user.updated_at",
+			users.member_id "user.member_id",
+			users.rfid_uid "user.rfid_uid"
+			FROM checkins JOIN users ON checkins.user_id = users.id
+			ORDER BY checkins.timestamp ASC`); err != nil {
+		return nil, fmt.Errorf("unable to query checkins: %s", err.Error())
+	}
+
+	return checkIns, nil
+}
+
 func ListUserCheckIns(db *sqlx.DB, userID int64) ([]CheckIn, error) {
 
 	checkIns := []CheckIn{}

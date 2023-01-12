@@ -1,10 +1,12 @@
-import {Box, Center, useToast} from '@chakra-ui/react';
+import {DownloadIcon} from '@chakra-ui/icons';
+import {Box, Button, Center, useToast} from '@chakra-ui/react';
 import {format, parse} from 'date-fns';
 import React, {FC, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {
   createWebsocket,
   deleteCheckIn,
+  downloadAllCheckIns,
   downloadCheckInList,
   isCheckInMessage,
   useCheckInList,
@@ -60,6 +62,10 @@ export const CheckInListPage: FC = () => {
     downloadCheckInList(date);
   };
 
+  const handleDownloadAll = () => {
+    downloadAllCheckIns();
+  };
+
   const onDeleteCheckIn = async (checkinId: number) => {
     if (await confirm('Are you sure?')) {
       try {
@@ -85,6 +91,18 @@ export const CheckInListPage: FC = () => {
           onDownload={handleDownload}
         />
         <CheckInList checkIns={checkIns ?? []} onDelete={onDeleteCheckIn} />
+        <Center>
+          <Button
+            leftIcon={<DownloadIcon />}
+            colorScheme="teal"
+            aria-label="Download all CheckIns as .csv"
+            title="Download all CheckIns as .csv"
+            variant="solid"
+            onClick={handleDownloadAll}
+          >
+            Download all
+          </Button>
+        </Center>
       </Box>
     </Center>
   );

@@ -94,6 +94,16 @@ export const downloadCheckInList = async (date: Date) => {
   FileDownload(response.data, response.headers['x-filename'] ?? 'export.csv');
 };
 
+export const downloadAllCheckIns = async () => {
+  const response = await axios.get('/api/v1/checkins/all', {
+    headers: {Accept: 'application/csv'},
+  });
+  FileDownload(
+    response.data,
+    response.headers['x-filename'] ?? 'export_all.csv'
+  );
+};
+
 export const useUserCheckInList = (
   userId: number
 ): SWRResponse<CheckIn[], Error> => {

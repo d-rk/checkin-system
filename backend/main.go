@@ -39,6 +39,7 @@ func main() {
 
 	api.GET("/checkins", checkInHandler.ListCheckIns)
 	api.GET("/checkins/per-day", checkInHandler.ListCheckInsPerDay)
+	api.GET("/checkins/all", checkInHandler.ListAllCheckIns)
 	api.POST("/checkins", checkInHandler.AddCheckIn)
 	api.DELETE("/checkins/:id", checkInHandler.DeleteCheckIn)
 

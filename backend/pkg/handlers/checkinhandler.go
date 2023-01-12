@@ -76,6 +76,24 @@ func (h *CheckInHandler) ListCheckInsPerDay(c *gin.Context) {
 	}
 }
 
+func (h *CheckInHandler) ListAllCheckIns(c *gin.Context) {
+
+	checkIns, err := models.ListAllCheckIns(h.db)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
+		return
+	}
+
+	switch c.Request.Header.Get("Accept") {
+	case "application/csv":
+		writeCSV(c, fmt.Sprintf("%s_all_checkins.csv", time.Now().Format("2006-01-02")), checkIns)
+	case "application/json":
+		fallthrough
+	default:
+		c.JSON(http.StatusOK, checkIns)
+	}
+}
+
 func (h *CheckInHandler) ListUserCheckIns(c *gin.Context) {
 
 	userID, err := strconv.ParseInt(c.Param("id"), 10, 64)
