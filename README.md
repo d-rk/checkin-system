@@ -111,3 +111,20 @@ The shield can be build based on the following schematic:
 ![Fritzing](.github/images/fritzing.png)
 
 Download the [Fritzing File](raspi/fritzing/rfid_reader.fzz).
+
+## build docker images
+
+on an arm64 machine clone the repo an run:
+
+```shell
+# build
+git pull
+docker-compose build --pull
+
+# login to quay.io / user-settings / Generate Encrypted Password
+export QUAY_IO_PASSWORD=xxx
+echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
+
+# push
+docker-compose push
+```
