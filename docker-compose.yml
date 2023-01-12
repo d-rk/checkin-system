@@ -35,6 +35,7 @@ services:
       - DB_PORT=5432
       - DB_SSL_MODE=disable
       - CORS_ALLOWED_ORIGINS=*
+      - CHECKIN_RETENTION_DAYS=365
     networks:
       - checkin-system-network
 

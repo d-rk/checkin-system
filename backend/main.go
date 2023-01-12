@@ -20,6 +20,8 @@ func main() {
 	checkInHandler := handlers.CreateCheckInHandler(db, websocket)
 	websocketHandler := handlers.CreateWebsocketHandler(websocket)
 
+	checkInHandler.DeleteOldCheckIns()
+
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
 

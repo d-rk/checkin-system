@@ -99,6 +99,21 @@ func DeleteCheckInsByUserID(db *sqlx.DB, ctx context.Context, userID int64) erro
 	})
 }
 
+func DeleteCheckInsOlderThan(db *sqlx.DB, thresholdDays int64) error {
+
+	return database.WithTransaction(db, func(tx database.Tx) error {
+
+		deleteCheckinsStatement, err := db.Preparex(`DELETE FROM checkins WHERE DATE_PART('day', now() - date) > $1`)
+
+		if err != nil {
+			return err
+		}
+
+		_, err = deleteCheckinsStatement.Exec(thresholdDays)
+		return err
+	})
+}
+
 func (checkIn *CheckIn) Save(db *sqlx.DB, ctx context.Context) (*CheckIn, error) {
 
 	insertStatement, err := db.PrepareNamedContext(ctx, `INSERT INTO checkins

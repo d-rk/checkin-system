@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -180,6 +182,25 @@ func (h *CheckInHandler) DeleteUserCheckIns(c *gin.Context) {
 	}
 
 	c.Writer.WriteHeader(http.StatusNoContent)
+}
+
+func (h *CheckInHandler) DeleteOldCheckIns() {
+
+	retentionDaysEnv := os.Getenv("CHECKIN_RETENTION_DAYS")
+	if retentionDaysEnv == "" {
+		retentionDaysEnv = "365"
+	}
+
+	retentionDays, err := strconv.ParseInt(retentionDaysEnv, 10, 64)
+	if err != nil {
+		log.Fatal("parsing CHECKIN_RETENTION_DAYS failed", err)
+	}
+
+	err = models.DeleteCheckInsOlderThan(h.db, retentionDays)
+
+	if err != nil {
+		log.Fatal("error deleting old checkIns", err)
+	}
 }
 
 func (h *CheckInHandler) ListCheckInDates(c *gin.Context) {
