@@ -6,8 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,17 +19,17 @@ type Handler interface {
 }
 
 type handler struct {
-	db        *sqlx.DB
+	repo      Repository
 	websocket *websocket.Server
 }
 
-func CreateHandler(db *sqlx.DB, websocket *websocket.Server) Handler {
-	return &handler{db, websocket}
+func CreateHandler(repo Repository, websocket *websocket.Server) Handler {
+	return &handler{repo, websocket}
 }
 
 func (h *handler) ListUsers(c *gin.Context) {
 
-	users, err := ListUsers(h.db)
+	users, err := h.repo.ListUsers(c)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "No users found"})
@@ -49,7 +47,7 @@ func (h *handler) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	user, err := GetUserByID(h.db, id)
+	user, err := h.repo.GetUserByID(c, id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -68,21 +66,21 @@ func (h *handler) AddUser(c *gin.Context) {
 		return
 	}
 
-	_, err := GetUserByName(h.db, user.Name, -1)
+	_, err := h.repo.GetUserByName(c, user.Name, -1)
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
 		return
 	}
 
-	_, err = GetUserByRfidUid(h.db, user.RFIDuid, -1)
+	_, err = h.repo.GetUserByRfidUid(c, user.RFIDuid, -1)
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User with rfid_uid already exists"})
 		return
 	}
 
-	savedUser, err := user.Insert(h.db, c.Request.Context())
+	savedUser, err := h.repo.SaveUser(c, &user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unable to save user: %v", err)})
@@ -100,7 +98,7 @@ func (h *handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := GetUserByID(h.db, id)
+	user, err := h.repo.GetUserByID(c, id)
 
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
@@ -112,14 +110,14 @@ func (h *handler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	_, err = GetUserByName(h.db, user.Name, user.ID)
+	_, err = h.repo.GetUserByName(c, user.Name, user.ID)
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User with name already exists"})
 		return
 	}
 
-	_, err = GetUserByRfidUid(h.db, user.RFIDuid, user.ID)
+	_, err = h.repo.GetUserByRfidUid(c, user.RFIDuid, user.ID)
 
 	if err == nil {
 		c.JSON(http.StatusConflict, gin.H{"error": "User with rfid_uid already exists"})
@@ -128,7 +126,7 @@ func (h *handler) UpdateUser(c *gin.Context) {
 
 	user.ID = id
 
-	savedUser, err := user.Update(h.db, c.Request.Context())
+	savedUser, err := h.repo.UpdateUser(c, &user)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unable to update user: %v", err)})
@@ -146,7 +144,7 @@ func (h *handler) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	err = DeleteUser(h.db, c.Request.Context(), id)
+	err = h.repo.DeleteUser(c, id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot delete user"})
@@ -158,7 +156,7 @@ func (h *handler) DeleteUser(c *gin.Context) {
 
 func (h *handler) DeleteAllUsers(c *gin.Context) {
 
-	err := DeleteAllUsers(h.db, c.Request.Context())
+	err := h.repo.DeleteAllUsers(c)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot delete user"})

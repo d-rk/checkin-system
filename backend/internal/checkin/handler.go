@@ -1,6 +1,7 @@
 package checkin
 
 import (
+	"context"
 	"fmt"
 	"github.com/d-rk/checkin-system/internal/user"
 	"github.com/d-rk/checkin-system/internal/websocket"
@@ -13,7 +14,6 @@ import (
 	"github.com/flytam/filenamify"
 	"github.com/gin-gonic/gin"
 	"github.com/gocarina/gocsv"
-	"github.com/jmoiron/sqlx"
 )
 
 type Handler interface {
@@ -24,12 +24,13 @@ type Handler interface {
 	AddCheckIn(c *gin.Context)
 	DeleteCheckIn(c *gin.Context)
 	DeleteUserCheckIns(c *gin.Context)
-	DeleteOldCheckIns()
+	DeleteOldCheckIns(ctx context.Context)
 	ListCheckInDates(c *gin.Context)
 }
 
 type handler struct {
-	db        *sqlx.DB
+	repo      Repository
+	userRepo  user.Repository
 	websocket *websocket.Server
 }
 
@@ -42,13 +43,13 @@ type WebsocketMessage struct {
 	CheckIn *CheckIn `json:"check_in"`
 }
 
-func CreateHandler(db *sqlx.DB, websocket *websocket.Server) Handler {
-	return &handler{db, websocket}
+func CreateHandler(repo Repository, userRepo user.Repository, websocket *websocket.Server) Handler {
+	return &handler{repo, userRepo, websocket}
 }
 
 func (h *handler) ListCheckIns(c *gin.Context) {
 
-	checkIns, err := ListCheckIns(h.db)
+	checkIns, err := h.repo.ListCheckIns(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
 		return
@@ -72,7 +73,7 @@ func (h *handler) ListCheckInsPerDay(c *gin.Context) {
 		return
 	}
 
-	checkIns, err := ListCheckInsPerDay(h.db, day)
+	checkIns, err := h.repo.ListCheckInsPerDay(c, day)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
 		return
@@ -90,7 +91,7 @@ func (h *handler) ListCheckInsPerDay(c *gin.Context) {
 
 func (h *handler) ListAllCheckIns(c *gin.Context) {
 
-	checkIns, err := ListAllCheckIns(h.db)
+	checkIns, err := h.repo.ListAllCheckIns(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
 		return
@@ -114,7 +115,7 @@ func (h *handler) ListUserCheckIns(c *gin.Context) {
 		return
 	}
 
-	checkIns, err := ListUserCheckIns(h.db, userID)
+	checkIns, err := h.repo.ListUserCheckIns(c, userID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("not found: %s", err.Error())})
 		return
@@ -123,13 +124,13 @@ func (h *handler) ListUserCheckIns(c *gin.Context) {
 	switch c.Request.Header.Get("Accept") {
 	case "application/csv":
 
-		user, err := user.GetUserByID(h.db, userID)
+		u, err := h.userRepo.GetUserByID(c, userID)
 		if err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("user not found: %s", err.Error())})
 			return
 		}
 
-		writeCSV(c, fmt.Sprintf("%s.csv", user.Name), checkIns)
+		writeCSV(c, fmt.Sprintf("%s.csv", u.Name), checkIns)
 
 	case "application/json":
 		fallthrough
@@ -147,7 +148,7 @@ func (h *handler) AddCheckIn(c *gin.Context) {
 		return
 	}
 
-	user, err := user.GetUserByRfidUid(h.db, checkInRequest.RFIDuid, -1)
+	u, err := h.userRepo.GetUserByRfidUid(c, checkInRequest.RFIDuid, -1)
 
 	websocketMessage := WebsocketMessage{}
 	websocketMessage.RFIDuid = checkInRequest.RFIDuid
@@ -162,10 +163,10 @@ func (h *handler) AddCheckIn(c *gin.Context) {
 		ID:        -1,
 		Date:      truncateToStartOfDay(time.Now()),
 		Timestamp: time.Now(),
-		UserID:    user.ID,
+		UserID:    u.ID,
 	}
 
-	savedCheckIn, err := checkIn.Save(h.db, c.Request.Context())
+	savedCheckIn, err := h.repo.SaveCheckIn(c, &checkIn)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unable to save checkIn: %v", err)})
@@ -186,7 +187,7 @@ func (h *handler) DeleteCheckIn(c *gin.Context) {
 		return
 	}
 
-	err = DeleteCheckInByID(h.db, c.Request.Context(), id)
+	err = h.repo.DeleteCheckInByID(c, id)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot delete checkIn"})
@@ -204,7 +205,7 @@ func (h *handler) DeleteUserCheckIns(c *gin.Context) {
 		return
 	}
 
-	err = DeleteCheckInsByUserID(h.db, c.Request.Context(), userID)
+	err = h.repo.DeleteCheckInsByUserID(c, userID)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cannot delete user checkIns"})
@@ -214,7 +215,7 @@ func (h *handler) DeleteUserCheckIns(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusNoContent)
 }
 
-func (h *handler) DeleteOldCheckIns() {
+func (h *handler) DeleteOldCheckIns(ctx context.Context) {
 
 	retentionDaysEnv := os.Getenv("CHECKIN_RETENTION_DAYS")
 	if retentionDaysEnv == "" {
@@ -226,7 +227,7 @@ func (h *handler) DeleteOldCheckIns() {
 		log.Fatal("parsing CHECKIN_RETENTION_DAYS failed", err)
 	}
 
-	err = DeleteCheckInsOlderThan(h.db, retentionDays)
+	err = h.repo.DeleteCheckInsOlderThan(ctx, retentionDays)
 
 	if err != nil {
 		log.Fatal("error deleting old checkIns", err)
@@ -235,7 +236,7 @@ func (h *handler) DeleteOldCheckIns() {
 
 func (h *handler) ListCheckInDates(c *gin.Context) {
 
-	dates, err := ListCheckInDates(h.db)
+	dates, err := h.repo.ListCheckInDates(c)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": fmt.Sprintf("unable to list dates: %s", err.Error())})
 		return

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/d-rk/checkin-system/internal/checkin"
 	"github.com/d-rk/checkin-system/internal/database"
 	"github.com/d-rk/checkin-system/internal/user"
@@ -17,11 +18,14 @@ func main() {
 
 	ws := &websocket.Server{}
 
-	userHandler := user.CreateHandler(db, ws)
-	checkInHandler := checkin.CreateHandler(db, ws)
+	checkInRepo := checkin.NewRepo(db)
+	userRepo := user.NewRepo(db)
+
+	userHandler := user.CreateHandler(userRepo, ws)
+	checkInHandler := checkin.CreateHandler(checkInRepo, userRepo, ws)
 	websocketHandler := websocket.CreateHandler(ws)
 
-	checkInHandler.DeleteOldCheckIns()
+	checkInHandler.DeleteOldCheckIns(context.Background())
 
 	r := gin.Default()
 	r.Use(middleware.Cors())
