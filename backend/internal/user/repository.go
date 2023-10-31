@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/d-rk/checkin-system/internal/database"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -19,6 +20,7 @@ type Repository interface {
 	DeleteAllUsers(ctx context.Context) error
 	SaveUser(ctx context.Context, user *User) (*User, error)
 	UpdateUser(ctx context.Context, user *User) (*User, error)
+	VerifyCredentials(ctx context.Context, username string, password string) (*User, error)
 }
 
 type repository struct {
@@ -167,4 +169,23 @@ func (r *repository) UpdateUser(ctx context.Context, user *User) (*User, error) 
 	_ = updateStatement.MustExecContext(ctx, user)
 
 	return user, nil
+}
+
+func (r *repository) VerifyCredentials(ctx context.Context, username string, password string) (*User, error) {
+
+	user := User{}
+
+	if err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE name = $1", username); err != nil {
+		return nil, errors.New("user not found")
+	}
+
+	err := VerifyPassword(password, user.PasswordHash)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func VerifyPassword(password, hashedPassword string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }

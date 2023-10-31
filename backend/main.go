@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/d-rk/checkin-system/internal/auth"
 	"github.com/d-rk/checkin-system/internal/checkin"
 	"github.com/d-rk/checkin-system/internal/database"
 	"github.com/d-rk/checkin-system/internal/user"
@@ -21,6 +22,7 @@ func main() {
 	checkInRepo := checkin.NewRepo(db)
 	userRepo := user.NewRepo(db)
 
+	authHandler := auth.CreateHandler(userRepo)
 	userHandler := user.CreateHandler(userRepo, ws)
 	checkInHandler := checkin.CreateHandler(checkInRepo, userRepo, ws)
 	websocketHandler := websocket.CreateHandler(ws)
@@ -29,10 +31,17 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.Cors())
+	r.Use(middleware.Timeout(5 * time.Second))
+
+	public := r.Group("/api")
+
+	public.POST("/register", authHandler.Register)
+	public.POST("/login", authHandler.Login)
 
 	api := r.Group("/api/v1")
-	api.Use(middleware.Timeout(5 * time.Second))
+	api.Use(middleware.Auth(userRepo))
 
+	api.GET("/users/me", authHandler.CurrentUser)
 	api.GET("/users", userHandler.ListUsers)
 	api.POST("/users", userHandler.AddUser)
 	api.GET("/users/:id", userHandler.GetUserByID)
