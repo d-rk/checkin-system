@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	timeout "github.com/vearne/gin-timeout"
 )
 
-func TimeoutMiddleware(timeoutDuration time.Duration) gin.HandlerFunc {
+func Timeout(timeoutDuration time.Duration) gin.HandlerFunc {
 
 	defaultMsg := fmt.Sprintf(`{"error": "request aborted after %v"}`, timeoutDuration)
 

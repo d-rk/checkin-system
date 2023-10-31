@@ -11,13 +11,13 @@ type Server struct {
 	Clients []Client
 }
 
-// each client consists of auto-generated ID & connection
+// Client each client consists of auto-generated ID & connection
 type Client struct {
 	ID         string
 	Connection *websocket.Conn
 }
 
-// type for a valid message.
+// Message type for a valid message.
 type Message struct {
 	Message string `json:"message"`
 	Data    any    `json:"data"`

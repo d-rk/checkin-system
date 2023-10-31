@@ -1,4 +1,4 @@
-package middlewares
+package middleware
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func CORSMiddleware() gin.HandlerFunc {
+func Cors() gin.HandlerFunc {
 
 	err := godotenv.Load(".env")
 

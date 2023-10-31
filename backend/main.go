@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/d-rk/checkin-system/internal/checkin"
+	"github.com/d-rk/checkin-system/internal/database"
+	"github.com/d-rk/checkin-system/internal/user"
+	"github.com/d-rk/checkin-system/internal/websocket"
 	"time"
 
-	"github.com/d-rk/checkin-system/pkg/handlers"
-	"github.com/d-rk/checkin-system/pkg/middlewares"
-	"github.com/d-rk/checkin-system/pkg/services/database"
-	"github.com/d-rk/checkin-system/pkg/services/websocket"
+	"github.com/d-rk/checkin-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,19 +15,19 @@ func main() {
 
 	db := database.Connect()
 
-	websocket := &websocket.Server{}
+	ws := &websocket.Server{}
 
-	userHandler := handlers.CreateUserHandler(db, websocket)
-	checkInHandler := handlers.CreateCheckInHandler(db, websocket)
-	websocketHandler := handlers.CreateWebsocketHandler(websocket)
+	userHandler := user.CreateHandler(db, ws)
+	checkInHandler := checkin.CreateHandler(db, ws)
+	websocketHandler := websocket.CreateHandler(ws)
 
 	checkInHandler.DeleteOldCheckIns()
 
 	r := gin.Default()
-	r.Use(middlewares.CORSMiddleware())
+	r.Use(middleware.Cors())
 
 	api := r.Group("/api/v1")
-	api.Use(middlewares.TimeoutMiddleware(5 * time.Second))
+	api.Use(middleware.Timeout(5 * time.Second))
 
 	api.GET("/users", userHandler.ListUsers)
 	api.POST("/users", userHandler.AddUser)

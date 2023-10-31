@@ -1,12 +1,13 @@
-package models
+package checkin
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/d-rk/checkin-system/internal/database"
+	"github.com/d-rk/checkin-system/internal/user"
 	"time"
 
-	"github.com/d-rk/checkin-system/pkg/services/database"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -19,7 +20,7 @@ type CheckIn struct {
 
 type CheckInWithUser struct {
 	CheckIn
-	User User `db:"user" json:"user" csv:"-"`
+	User user.User `db:"user" json:"user" csv:"-"`
 }
 
 type CheckInDate struct {

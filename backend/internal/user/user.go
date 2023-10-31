@@ -1,11 +1,11 @@
-package models
+package user
 
 import (
 	"context"
 	"errors"
+	"github.com/d-rk/checkin-system/internal/database"
 	"time"
 
-	"github.com/d-rk/checkin-system/pkg/services/database"
 	"github.com/jmoiron/sqlx"
 	"gopkg.in/guregu/null.v4"
 )

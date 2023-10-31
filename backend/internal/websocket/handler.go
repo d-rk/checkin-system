@@ -1,10 +1,9 @@
-package handlers
+package websocket
 
 import (
 	"fmt"
 	"net/http"
 
-	ws "github.com/d-rk/checkin-system/pkg/services/websocket"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -15,8 +14,8 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func CreateWebsocketHandler(server *ws.Server) func(*gin.Context) {
-	return func (ctx *gin.Context) {
+func CreateHandler(server *Server) func(*gin.Context) {
+	return func(ctx *gin.Context) {
 		// trust all origin to avoid CORS
 		upgrader.CheckOrigin = func(r *http.Request) bool {
 			return true
@@ -31,7 +30,7 @@ func CreateWebsocketHandler(server *ws.Server) func(*gin.Context) {
 		defer conn.Close()
 
 		// create new client & add to client list
-		client := ws.Client{
+		client := Client{
 			ID:         uuid.Must(uuid.NewRandom()).String(),
 			Connection: conn,
 		}
@@ -40,8 +39,7 @@ func CreateWebsocketHandler(server *ws.Server) func(*gin.Context) {
 
 		// greet the new client
 		greeting := fmt.Sprintf("Server: Welcome! Your ID is %s", client.ID)
-		server.PublishClient(&client, ws.Message{Message: greeting, Data: client.ID})
-
+		server.PublishClient(&client, Message{Message: greeting, Data: client.ID})
 
 		// message handling
 		for {
@@ -54,6 +52,3 @@ func CreateWebsocketHandler(server *ws.Server) func(*gin.Context) {
 		}
 	}
 }
-
-
-
