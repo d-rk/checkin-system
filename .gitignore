@@ -2,3 +2,4 @@
 .idea
 backend/.env
 backend/checkin-system
+/backend/**/*.gen.go

@@ -3,12 +3,11 @@ package auth
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type TokenClaims struct {
@@ -19,7 +18,7 @@ type TokenClaims struct {
 func GenerateToken(userId int64) (string, error) {
 
 	now := time.Now()
-	tokenLifespan, err := strconv.Atoi(os.Getenv("TOKEN_HOUR_LIFESPAN"))
+	tokenExpiryHours, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY_HOURS"))
 
 	if err != nil {
 		return "", err
@@ -29,7 +28,7 @@ func GenerateToken(userId int64) (string, error) {
 		UserID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(tokenLifespan))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(tokenExpiryHours))),
 		},
 	}
 
@@ -37,8 +36,16 @@ func GenerateToken(userId int64) (string, error) {
 	return token.SignedString([]byte(os.Getenv("API_SECRET")))
 }
 
-func ValidateToken(c *gin.Context) (*TokenClaims, error) {
-	tokenString := ExtractToken(c)
+func FindToken(request *http.Request) (string, error) {
+	// Get token from authorization header.
+	bearer := request.Header.Get("Authorization")
+	if len(bearer) > 7 && strings.ToUpper(bearer[0:6]) == "BEARER" {
+		return bearer[7:], nil
+	}
+	return "", fmt.Errorf("invalid token: " + bearer)
+}
+
+func ValidateToken(tokenString string) (*TokenClaims, error) {
 	claims := &TokenClaims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
@@ -53,7 +60,7 @@ func ValidateToken(c *gin.Context) (*TokenClaims, error) {
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("token is invalid")
+		return nil, fmt.Errorf("token invalid")
 	}
 
 	claims, ok := token.Claims.(*TokenClaims)
@@ -63,17 +70,4 @@ func ValidateToken(c *gin.Context) (*TokenClaims, error) {
 	}
 
 	return claims, nil
-}
-
-func ExtractToken(c *gin.Context) string {
-	token := c.Query("token")
-	if token != "" {
-		return token
-	}
-	bearerToken := c.Request.Header.Get("Authorization")
-	if len(strings.Split(bearerToken, " ")) == 2 {
-		token = strings.Split(bearerToken, " ")[1]
-	}
-	c.Set("token", token)
-	return token
 }

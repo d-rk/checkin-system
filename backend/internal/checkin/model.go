@@ -20,3 +20,8 @@ type CheckInWithUser struct {
 type CheckInDate struct {
 	Date time.Time `db:"date" json:"date"`
 }
+
+type WebsocketMessage struct {
+	RFIDuid string   `db:"rfid_uid" json:"rfid_uid"`
+	CheckIn *CheckIn `json:"check_in"`
+}

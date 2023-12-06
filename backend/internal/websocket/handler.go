@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
@@ -14,17 +13,17 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func CreateHandler(server *Server) func(*gin.Context) {
-	return func(ctx *gin.Context) {
+func CreateHandler(server *Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		// trust all origin to avoid CORS
 		upgrader.CheckOrigin = func(r *http.Request) bool {
 			return true
 		}
 
 		// upgrades connection to websocket
-		conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
-			ctx.Status(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		defer conn.Close()

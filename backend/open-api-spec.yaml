@@ -1,0 +1,435 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: checkin-system rest api
+  description: rest api for checkin-system
+servers:
+  - url: http://localhost:8080
+    description: development
+
+paths:
+  /api/login:
+    post:
+      tags:
+        - authentication
+      security: []
+      description: user login
+      operationId: login
+      requestBody:
+        description: credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginCredentials"
+      responses:
+        "200":
+          description: "bearer token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BearerToken"
+
+  /api/v1/users:
+    get:
+      tags:
+        - user
+      description: list users
+      operationId: listUsers
+      responses:
+        "200":
+          description: "list of users"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+    post:
+      tags:
+        - user
+      description: create a user
+      operationId: createUser
+      requestBody:
+        description: new user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+      responses:
+        "201":
+          description: "created user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/v1/users/me:
+    get:
+      tags:
+        - user
+      description: get authenticated user
+      operationId: getAuthenticatedUser
+      responses:
+        "200":
+          description: "a user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/v1/users/all:
+    delete:
+      tags:
+        - user
+      description: delete all users
+      operationId: deleteAllUsers
+      responses:
+        "204":
+          description: "users deleted"
+
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - user
+      description: get a user by id
+      operationId: getUser
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      responses:
+        "200":
+          description: "a user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    put:
+      tags:
+        - user
+      description: update a user
+      operationId: updateUser
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      requestBody:
+        description: updated user
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+      responses:
+        "200":
+          description: "a user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    delete:
+      tags:
+        - user
+      description: delete a user
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      responses:
+        "204":
+          description: "user deleted"
+
+  /api/v1/users/{userId}/password:
+    put:
+      tags:
+        - user
+      description: update a user
+      operationId: updateUserPassword
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      requestBody:
+        description: new password
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Password"
+      responses:
+        "204":
+          description: "password updated"
+
+  /api/v1/users/{userId}/checkins:
+    get:
+      tags:
+        - checkins
+      description: get all checkins of a user
+      operationId: getUserCheckins
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      responses:
+        "200":
+          description: "list of checkins"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+    post:
+      tags:
+        - checkins
+      description: create a checkin for a user
+      operationId: createCheckin
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+        - name: timestamp
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "201":
+          description: "created checkin"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+    delete:
+      tags:
+        - checkins
+      description: delete all checkins of a user
+      operationId: deleteUserCheckins
+      parameters:
+        - $ref: '#/components/parameters/userIdPathParam'
+      responses:
+        "204":
+          description: "checkins deleted"
+
+  /api/v1/checkins:
+    get:
+      tags:
+        - checkins
+      description: list checkins
+      operationId: listCheckins
+      responses:
+        "200":
+          description: "list of checkins"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Checkin"
+
+    post:
+      tags:
+        - checkins
+      description: create a checkin with a given rfid
+      operationId: createRfidCheckin
+      parameters:
+        - name: rfid
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: timestamp
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "201":
+          description: "created checkin"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Checkin"
+
+  /api/v1/checkins/{checkinId}:
+    delete:
+      tags:
+        - user
+      description: delete a checkin
+      operationId: deleteCheckin
+      parameters:
+        - $ref: '#/components/parameters/checkinIdPathParam'
+      responses:
+        "204":
+          description: "checkin deleted"
+
+  /api/v1/checkins/per-day:
+    get:
+      tags:
+        - checkins
+      description: list checkins of one day along with user info
+      operationId: listCheckinsPerDay
+      parameters:
+        - in: query
+          name: day
+          schema:
+            type: string
+            format: date
+          required: true
+      responses:
+        "200":
+          description: "list of checkins"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckinWithUser"
+
+  /api/v1/checkins/all:
+    get:
+      tags:
+        - checkins
+      description: list all checkins along with user info
+      operationId: listAllCheckins
+      responses:
+        "200":
+          description: "list of checkins"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckinWithUser"
+
+  /api/v1/checkins/dates:
+    get:
+      tags:
+        - checkins
+      description: list dates with at least one checkin
+      operationId: listCheckinDates
+      responses:
+        "200":
+          description: "list of checkin dates"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CheckinDate"
+
+components:
+  parameters:
+    userIdPathParam:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+    checkinIdPathParam:
+      name: checkinId
+      in: path
+      required: true
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    Password:
+      type: object
+      required:
+        - password
+      properties:
+        password:
+          type: string
+    LoginCredentials:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    NewUser:
+      type: object
+      required:
+        - name
+        - createdAt
+      properties:
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/NewUser'
+        - required:
+            - id
+          properties:
+            id:
+              type: integer
+              format: int64
+              description: unique id of the user
+
+    Checkin:
+      type: object
+      required:
+        - id
+        - date
+        - timestamp
+        - userId
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: unique id of the user
+        date:
+          type: string
+          format: date
+        timestamp:
+          type: string
+          format: datetime
+        userId:
+          type: integer
+          format: int64
+
+    CheckinWithUser:
+      allOf:
+        - $ref: '#/components/schemas/Checkin'
+        - $ref: '#/components/schemas/User'
+
+    CheckinDate:
+      type: object
+      required:
+        - date
+      properties:
+        date:
+          type: string
+          format: date
+
+    BearerToken:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+
+    ErrorResponse:
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
