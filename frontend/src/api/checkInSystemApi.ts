@@ -7,8 +7,8 @@ import {WEBSOCKET_BASE_URL} from './config';
 
 export type UserFields = {
   name: string;
-  member_id: string;
-  rfid_uid: string;
+  memberId: string;
+  rfidUid: string;
 };
 
 export type User = UserFields & {
@@ -35,6 +35,10 @@ export type CheckInDate = {
   date: string;
 };
 
+export type BearerToken = {
+  token: string;
+};
+
 export const isCheckInMessage = (message: any): message is CheckInMessage => {
   return (message as CheckInMessage).rfid_uid !== undefined;
 };
@@ -44,8 +48,21 @@ const fetcher = async (url: string) => {
   return result.data;
 };
 
+export const apiLogin = async (credentials: {
+  username: string;
+  password: string;
+}): Promise<BearerToken> => {
+  const response = await axios.post(`/api/login`, credentials);
+  return response.data;
+};
+
 export const useUserList = (): SWRResponse<User[], Error> => {
   return useSWR<User[], Error>('/api/v1/users', fetcher);
+};
+
+export const getAuthenticatedUser = async (): Promise<User> => {
+  const response = await axios.get(`/api/v1/users/me`);
+  return response.data;
 };
 
 export const getUser = (userId: number): Promise<AxiosResponse<User>> => {

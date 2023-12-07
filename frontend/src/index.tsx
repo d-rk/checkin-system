@@ -13,6 +13,9 @@ import {StartPage} from './pages/StartPage';
 import {UserCheckInListPage} from './pages/UserCheckInListPage';
 import {UserListPage} from './pages/UserListPage';
 import './style.scss';
+import {AuthProvider, RequireAuth} from './components/auth/AuthProvider';
+import LoginPage from './pages/LoginPage';
+import LogoutPage from './pages/LogoutPage';
 
 const rootElement = document.getElementById('root');
 
@@ -22,24 +25,67 @@ root.render(
   <React.StrictMode>
     <Suspense fallback={<div>Loading...</div>}>
       <ChakraProvider theme={CalendarDefaultTheme}>
-        <ModalProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<App />}>
-                <Route index element={<StartPage />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/users" element={<UserListPage />} />
-                <Route
-                  path="/users/:userId/checkins"
-                  element={<UserCheckInListPage />}
-                />
-                <Route path="/checkins" element={<CheckInListPage />} />
-                <Route path="/checkins/:day" element={<CheckInListPage />} />
-                <Route path="*" element={<NotFoundPage />} />
-              </Route>
-            </Routes>
-          </Router>
-        </ModalProvider>
+        <AuthProvider>
+          <ModalProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<App />}>
+                  <Route index element={<StartPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/logout" element={<LogoutPage />} />
+                  <Route
+                    path="/calendar"
+                    element={
+                      <RequireAuth>
+                        <CalendarPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/users"
+                    element={
+                      <RequireAuth>
+                        <UserListPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/users/:userId/checkins"
+                    element={
+                      <RequireAuth>
+                        <UserCheckInListPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/checkins"
+                    element={
+                      <RequireAuth>
+                        <CheckInListPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="/checkins/:day"
+                    element={
+                      <RequireAuth>
+                        <CheckInListPage />
+                      </RequireAuth>
+                    }
+                  />
+                  <Route
+                    path="*"
+                    element={
+                      <RequireAuth>
+                        <NotFoundPage />
+                      </RequireAuth>
+                    }
+                  />
+                </Route>
+              </Routes>
+            </Router>
+          </ModalProvider>
+        </AuthProvider>
       </ChakraProvider>
     </Suspense>
   </React.StrictMode>

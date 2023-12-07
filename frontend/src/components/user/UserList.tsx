@@ -37,8 +37,8 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
           {users.map(user => (
             <Tr key={user.id}>
               <Td>{user.name}</Td>
-              <Td>{user.member_id}</Td>
-              <Td>{user.rfid_uid}</Td>
+              <Td>{user.memberId}</Td>
+              <Td>{user.rfidUid}</Td>
               <Td textAlign="right">
                 <IconButton
                   aria-label="View CheckIns"

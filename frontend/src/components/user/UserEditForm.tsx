@@ -31,8 +31,8 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
   } = useForm<UserFields>({
     defaultValues: {
       name: user?.name,
-      rfid_uid: user?.rfid_uid,
-      member_id: user?.member_id,
+      rfidUid: user?.rfidUid,
+      memberId: user?.memberId,
     },
   });
 
@@ -42,7 +42,7 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
     () =>
       createWebsocket((payload: any) => {
         if (rfidViaWebsocket && isCheckInMessage(payload)) {
-          setValue('rfid_uid', payload.rfid_uid);
+          setValue('rfidUid', payload.rfid_uid);
         }
       }),
     []
@@ -70,22 +70,22 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
             </FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={errors?.member_id !== undefined}>
+          <FormControl isInvalid={errors?.memberId !== undefined}>
             <FormLabel>Member ID</FormLabel>
             <Input
-              {...register('member_id', {})}
+              {...register('memberId', {})}
               placeholder="enter member id"
             />
             <FormHelperText>Member id of user</FormHelperText>
             <FormErrorMessage>
-              {errors.member_id && errors.member_id.message}
+              {errors.memberId && errors.memberId.message}
             </FormErrorMessage>
           </FormControl>
 
-          <FormControl isInvalid={errors?.rfid_uid !== undefined}>
+          <FormControl isInvalid={errors?.rfidUid !== undefined}>
             <FormLabel>RFID UID</FormLabel>
             <Input
-              {...register('rfid_uid', {required: 'field is required'})}
+              {...register('rfidUid', {required: 'field is required'})}
               placeholder={
                 rfidViaWebsocket
                   ? 'waiting for rfid token...'
@@ -99,7 +99,7 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
                 : 'Enter the id of the rfid token'}
             </FormHelperText>
             <FormErrorMessage>
-              {errors.rfid_uid && errors.rfid_uid.message}
+              {errors.rfidUid && errors.rfidUid.message}
             </FormErrorMessage>
           </FormControl>
 

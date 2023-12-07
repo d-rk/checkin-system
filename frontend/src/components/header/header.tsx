@@ -1,5 +1,6 @@
 import {HamburgerIcon} from '@chakra-ui/icons';
 import {
+  Avatar,
   Box,
   Flex,
   HStack,
@@ -74,6 +75,9 @@ const Header = () => {
             </MenuList>
           </Menu>
         </HStack>
+        <NavLink to="/logout">
+          <Avatar />
+        </NavLink>
       </Flex>
     </Box>
   );
