@@ -86,12 +86,11 @@ func setupRouter(userService user.Service, checkinService checkin.Service, ws *w
 		},
 		ErrorHandler: api.ValidateErrorHandlerFunc,
 	}
-	router.Use(netHttpMiddleware.OapiRequestValidatorWithOptions(swagger, &validatorOptions))
 
 	// register handler on router
 	api.HandlerWithOptions(apiHandler, api.ChiServerOptions{
 		BaseRouter:  router,
-		Middlewares: []api.MiddlewareFunc{api.AuthMiddleware()},
+		Middlewares: []api.MiddlewareFunc{netHttpMiddleware.OapiRequestValidatorWithOptions(swagger, &validatorOptions), api.AuthMiddleware()},
 	})
 
 	router.Get("/websocket", websocket.CreateHandler(ws))

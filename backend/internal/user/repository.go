@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/d-rk/checkin-system/internal/app"
 	"github.com/d-rk/checkin-system/internal/database"
 	"time"
@@ -39,7 +40,7 @@ func (r *repository) ListUsers(ctx context.Context) ([]User, error) {
 	var users []User
 
 	if err := r.db.SelectContext(ctx, &users, "SELECT * FROM users"); err != nil {
-		return nil, errors.New("no users found")
+		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 
 	return users, nil

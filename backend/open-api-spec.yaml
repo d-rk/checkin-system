@@ -1,8 +1,8 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: checkin-system rest api
-  description: rest api for checkin-system
+  title: check-in-system rest api
+  description: rest api for check-in-system
 servers:
   - url: http://localhost:8080
     description: development
@@ -11,7 +11,7 @@ paths:
   /api/login:
     post:
       tags:
-        - authentication
+        - auth
       security: []
       description: user login
       operationId: login
@@ -161,24 +161,24 @@ paths:
   /api/v1/users/{userId}/checkins:
     get:
       tags:
-        - checkins
-      description: get all checkins of a user
-      operationId: getUserCheckins
+        - checkIn
+      description: get all checkIns of a user
+      operationId: getUserCheckIns
       parameters:
         - $ref: '#/components/parameters/userIdPathParam'
       responses:
         "200":
-          description: "list of checkins"
+          description: "list of checkIns"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Checkin"
+                $ref: "#/components/schemas/CheckIn"
 
     post:
       tags:
-        - checkins
-      description: create a checkin for a user
-      operationId: createCheckin
+        - checkIn
+      description: create a checkIn for a user
+      operationId: createCheckIn
       parameters:
         - $ref: '#/components/parameters/userIdPathParam'
         - name: timestamp
@@ -189,44 +189,44 @@ paths:
             format: date-time
       responses:
         "201":
-          description: "created checkin"
+          description: "created checkIn"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Checkin"
+                $ref: "#/components/schemas/CheckIn"
 
     delete:
       tags:
-        - checkins
-      description: delete all checkins of a user
-      operationId: deleteUserCheckins
+        - checkIn
+      description: delete all checkIns of a user
+      operationId: deleteUserCheckIns
       parameters:
         - $ref: '#/components/parameters/userIdPathParam'
       responses:
         "204":
-          description: "checkins deleted"
+          description: "checkIns deleted"
 
   /api/v1/checkins:
     get:
       tags:
-        - checkins
-      description: list checkins
-      operationId: listCheckins
+        - checkIn
+      description: list checkIns
+      operationId: listCheckIns
       responses:
         "200":
-          description: "list of checkins"
+          description: "list of checkIns"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Checkin"
+                  $ref: "#/components/schemas/CheckIn"
 
     post:
       tags:
-        - checkins
-      description: create a checkin with a given rfid
-      operationId: createRfidCheckin
+        - checkIn
+      description: create a checkIn with a given rfid
+      operationId: createRfidCheckIn
       parameters:
         - name: rfid
           in: query
@@ -241,30 +241,30 @@ paths:
             format: date-time
       responses:
         "201":
-          description: "created checkin"
+          description: "created checkIn"
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Checkin"
+                $ref: "#/components/schemas/CheckIn"
 
-  /api/v1/checkins/{checkinId}:
+  /api/v1/checkins/{checkInId}:
     delete:
       tags:
         - user
-      description: delete a checkin
-      operationId: deleteCheckin
+      description: delete a checkIn
+      operationId: deleteCheckIn
       parameters:
-        - $ref: '#/components/parameters/checkinIdPathParam'
+        - $ref: '#/components/parameters/checkInIdPathParam'
       responses:
         "204":
-          description: "checkin deleted"
+          description: "checkIn deleted"
 
   /api/v1/checkins/per-day:
     get:
       tags:
-        - checkins
-      description: list checkins of one day along with user info
-      operationId: listCheckinsPerDay
+        - checkIn
+      description: list checkIns of one day along with user info
+      operationId: listCheckInsPerDay
       parameters:
         - in: query
           name: day
@@ -274,45 +274,45 @@ paths:
           required: true
       responses:
         "200":
-          description: "list of checkins"
+          description: "list of checkIns"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CheckinWithUser"
+                  $ref: "#/components/schemas/CheckInWithUser"
 
   /api/v1/checkins/all:
     get:
       tags:
-        - checkins
-      description: list all checkins along with user info
-      operationId: listAllCheckins
+        - checkIn
+      description: list all checkIns along with user info
+      operationId: listAllCheckIns
       responses:
         "200":
-          description: "list of checkins"
+          description: "list of checkIns"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CheckinWithUser"
+                  $ref: "#/components/schemas/CheckInWithUser"
 
   /api/v1/checkins/dates:
     get:
       tags:
-        - checkins
-      description: list dates with at least one checkin
-      operationId: listCheckinDates
+        - checkIn
+      description: list dates with at least one checkIn
+      operationId: listCheckInDates
       responses:
         "200":
-          description: "list of checkin dates"
+          description: "list of checkIn dates"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/CheckinDate"
+                  $ref: "#/components/schemas/CheckInDate"
 
 components:
   parameters:
@@ -323,8 +323,8 @@ components:
       schema:
         type: integer
         format: int64
-    checkinIdPathParam:
-      name: checkinId
+    checkInIdPathParam:
+      name: checkInId
       in: path
       required: true
       schema:
@@ -353,29 +353,33 @@ components:
       type: object
       required:
         - name
-        - createdAt
       properties:
         name:
           type: string
-        createdAt:
+        memberId:
           type: string
-          format: date-time
-        updatedAt:
+        rfidUid:
           type: string
-          format: date-time
 
     User:
       allOf:
         - $ref: '#/components/schemas/NewUser'
         - required:
             - id
+            - createdAt
           properties:
             id:
               type: integer
               format: int64
               description: unique id of the user
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
 
-    Checkin:
+    CheckIn:
       type: object
       required:
         - id
@@ -397,12 +401,12 @@ components:
           type: integer
           format: int64
 
-    CheckinWithUser:
+    CheckInWithUser:
       allOf:
-        - $ref: '#/components/schemas/Checkin'
+        - $ref: '#/components/schemas/CheckIn'
         - $ref: '#/components/schemas/User'
 
-    CheckinDate:
+    CheckInDate:
       type: object
       required:
         - date

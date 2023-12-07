@@ -12,15 +12,15 @@ import (
 )
 
 type Service interface {
-	ListCheckins(ctx context.Context) ([]CheckIn, error)
-	ListAllCheckins(ctx context.Context) ([]CheckInWithUser, error)
-	DeleteCheckinByID(ctx context.Context, checkinID int64) error
+	ListCheckIns(ctx context.Context) ([]CheckIn, error)
+	ListAllCheckIns(ctx context.Context) ([]CheckInWithUser, error)
+	DeleteCheckInByID(ctx context.Context, checkinID int64) error
 	DeleteCheckInsByUserID(ctx context.Context, userID int64) error
 	DeleteOldCheckIns(ctx context.Context) error
-	CreateCheckinForUser(ctx context.Context, userID int64, timestamp *time.Time) (*CheckIn, error)
-	CreateCheckinForRFID(ctx context.Context, rfidUid string, timestamp *time.Time) (*CheckIn, error)
-	ListCheckinsPerDay(ctx context.Context, day time.Time) ([]CheckInWithUser, error)
-	ListCheckinDates(ctx context.Context) ([]CheckInDate, error)
+	CreateCheckInForUser(ctx context.Context, userID int64, timestamp *time.Time) (*CheckIn, error)
+	CreateCheckInForRFID(ctx context.Context, rfidUid string, timestamp *time.Time) (*CheckIn, error)
+	ListCheckInsPerDay(ctx context.Context, day time.Time) ([]CheckInWithUser, error)
+	ListCheckInDates(ctx context.Context) ([]CheckInDate, error)
 	ListUserCheckIns(ctx context.Context, userID int64) ([]CheckIn, error)
 }
 
@@ -35,19 +35,19 @@ func NewService(repo Repository, userService user.Service, websocket *websocket.
 	return &service{repo, userService, websocket}
 }
 
-func (s *service) ListCheckins(ctx context.Context) ([]CheckIn, error) {
+func (s *service) ListCheckIns(ctx context.Context) ([]CheckIn, error) {
 	return s.repo.ListCheckIns(ctx)
 }
 
-func (s *service) ListAllCheckins(ctx context.Context) ([]CheckInWithUser, error) {
+func (s *service) ListAllCheckIns(ctx context.Context) ([]CheckInWithUser, error) {
 	return s.repo.ListAllCheckIns(ctx)
 }
 
-func (s *service) ListCheckinsPerDay(ctx context.Context, day time.Time) ([]CheckInWithUser, error) {
+func (s *service) ListCheckInsPerDay(ctx context.Context, day time.Time) ([]CheckInWithUser, error) {
 	return s.repo.ListCheckInsPerDay(ctx, day)
 }
 
-func (s *service) ListCheckinDates(ctx context.Context) ([]CheckInDate, error) {
+func (s *service) ListCheckInDates(ctx context.Context) ([]CheckInDate, error) {
 	return s.repo.ListCheckInDates(ctx)
 }
 
@@ -55,7 +55,7 @@ func (s *service) ListUserCheckIns(ctx context.Context, userID int64) ([]CheckIn
 	return s.repo.ListUserCheckIns(ctx, userID)
 }
 
-func (s *service) CreateCheckinForUser(ctx context.Context, userID int64, timestamp *time.Time) (*CheckIn, error) {
+func (s *service) CreateCheckInForUser(ctx context.Context, userID int64, timestamp *time.Time) (*CheckIn, error) {
 
 	checkinTimestamp := time.Now()
 	if timestamp != nil {
@@ -70,7 +70,7 @@ func (s *service) CreateCheckinForUser(ctx context.Context, userID int64, timest
 	return s.createCheckinForUser(ctx, u, checkinTimestamp)
 }
 
-func (s *service) CreateCheckinForRFID(ctx context.Context, rfidUid string, timestamp *time.Time) (*CheckIn, error) {
+func (s *service) CreateCheckInForRFID(ctx context.Context, rfidUid string, timestamp *time.Time) (*CheckIn, error) {
 
 	websocketMessage := WebsocketMessage{}
 	websocketMessage.RFIDuid = rfidUid
@@ -112,7 +112,7 @@ func (s *service) createCheckinForUser(ctx context.Context, user *user.User, tim
 	return s.repo.SaveCheckIn(ctx, &checkIn)
 }
 
-func (s *service) DeleteCheckinByID(ctx context.Context, checkinID int64) error {
+func (s *service) DeleteCheckInByID(ctx context.Context, checkinID int64) error {
 	return s.repo.DeleteCheckInByID(ctx, checkinID)
 }
 

@@ -151,6 +151,17 @@ func (h *apiHandler) DeleteAllUsers(w http.ResponseWriter, r *http.Request) {
 
 func (h *apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
 
+	authenticatedUserID, ok := r.Context().Value(AuthenticatedUserID).(int64)
+	if !ok {
+		handlerError(w, r, fmt.Errorf("authenticated user not found on context"))
+		return
+	}
+
+	if authenticatedUserID == userId {
+		handlerError(w, r, ConflictErr.Wrap(fmt.Errorf("cannot delete yourself")))
+		return
+	}
+
 	if err := h.userService.DeleteUser(r.Context(), userId); err != nil {
 		handlerError(w, r, err)
 		return
@@ -176,8 +187,8 @@ func (h *apiHandler) UpdateUserPassword(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) ListCheckins(w http.ResponseWriter, r *http.Request) {
-	checkins, err := h.checkinService.ListCheckins(r.Context())
+func (h *apiHandler) ListCheckIns(w http.ResponseWriter, r *http.Request) {
+	checkins, err := h.checkinService.ListCheckIns(r.Context())
 	if err != nil {
 		handlerError(w, r, err)
 		return
@@ -186,9 +197,9 @@ func (h *apiHandler) ListCheckins(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, toAPICheckIns(checkins))
 }
 
-func (h *apiHandler) CreateCheckin(w http.ResponseWriter, r *http.Request, userId UserIdPathParam, params CreateCheckinParams) {
+func (h *apiHandler) CreateCheckIn(w http.ResponseWriter, r *http.Request, userId UserIdPathParam, params CreateCheckInParams) {
 
-	c, err := h.checkinService.CreateCheckinForUser(r.Context(), userId, params.Timestamp)
+	c, err := h.checkinService.CreateCheckInForUser(r.Context(), userId, params.Timestamp)
 	if err != nil {
 		if errors.Is(err, app.ConflictErr) {
 			handlerError(w, r, ConflictErr.Wrap(err))
@@ -202,9 +213,9 @@ func (h *apiHandler) CreateCheckin(w http.ResponseWriter, r *http.Request, userI
 	writeJSON(w, r, http.StatusCreated, toAPICheckIn(c))
 }
 
-func (h *apiHandler) CreateRfidCheckin(w http.ResponseWriter, r *http.Request, params CreateRfidCheckinParams) {
+func (h *apiHandler) CreateRfidCheckIn(w http.ResponseWriter, r *http.Request, params CreateRfidCheckInParams) {
 
-	c, err := h.checkinService.CreateCheckinForRFID(r.Context(), params.Rfid, params.Timestamp)
+	c, err := h.checkinService.CreateCheckInForRFID(r.Context(), params.Rfid, params.Timestamp)
 	if err != nil {
 		if errors.Is(err, app.ConflictErr) {
 			handlerError(w, r, ConflictErr.Wrap(err))
@@ -218,8 +229,8 @@ func (h *apiHandler) CreateRfidCheckin(w http.ResponseWriter, r *http.Request, p
 	writeJSON(w, r, http.StatusCreated, toAPICheckIn(c))
 }
 
-func (h *apiHandler) ListAllCheckins(w http.ResponseWriter, r *http.Request) {
-	checkIns, err := h.checkinService.ListAllCheckins(r.Context())
+func (h *apiHandler) ListAllCheckIns(w http.ResponseWriter, r *http.Request) {
+	checkIns, err := h.checkinService.ListAllCheckIns(r.Context())
 	if err != nil {
 		handlerError(w, r, err)
 		return
@@ -235,9 +246,9 @@ func (h *apiHandler) ListAllCheckins(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *apiHandler) ListCheckinDates(w http.ResponseWriter, r *http.Request) {
+func (h *apiHandler) ListCheckInDates(w http.ResponseWriter, r *http.Request) {
 
-	dates, err := h.checkinService.ListCheckinDates(r.Context())
+	dates, err := h.checkinService.ListCheckInDates(r.Context())
 	if err != nil {
 		handlerError(w, r, err)
 		return
@@ -246,8 +257,8 @@ func (h *apiHandler) ListCheckinDates(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, toAPICheckInsDates(dates))
 }
 
-func (h *apiHandler) ListCheckinsPerDay(w http.ResponseWriter, r *http.Request, params ListCheckinsPerDayParams) {
-	checkIns, err := h.checkinService.ListCheckinsPerDay(r.Context(), params.Day.Time)
+func (h *apiHandler) ListCheckInsPerDay(w http.ResponseWriter, r *http.Request, params ListCheckInsPerDayParams) {
+	checkIns, err := h.checkinService.ListCheckInsPerDay(r.Context(), params.Day.Time)
 	if err != nil {
 		handlerError(w, r, err)
 		return
@@ -263,9 +274,9 @@ func (h *apiHandler) ListCheckinsPerDay(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
-func (h *apiHandler) DeleteCheckin(w http.ResponseWriter, r *http.Request, checkinId CheckinIdPathParam) {
+func (h *apiHandler) DeleteCheckIn(w http.ResponseWriter, r *http.Request, checkinId CheckInIdPathParam) {
 
-	if err := h.checkinService.DeleteCheckinByID(r.Context(), checkinId); err != nil {
+	if err := h.checkinService.DeleteCheckInByID(r.Context(), checkinId); err != nil {
 		handlerError(w, r, err)
 		return
 	}
@@ -273,7 +284,7 @@ func (h *apiHandler) DeleteCheckin(w http.ResponseWriter, r *http.Request, check
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) DeleteUserCheckins(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) DeleteUserCheckIns(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
 
 	if err := h.checkinService.DeleteCheckInsByUserID(r.Context(), userId); err != nil {
 		handlerError(w, r, err)
@@ -283,7 +294,7 @@ func (h *apiHandler) DeleteUserCheckins(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) GetUserCheckins(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) GetUserCheckIns(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
 
 	u, err := h.userService.GetUserByID(r.Context(), userId)
 	if err != nil {
@@ -309,9 +320,12 @@ func (h *apiHandler) GetUserCheckins(w http.ResponseWriter, r *http.Request, use
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		handlerError(w, r, err)
+		return
 	}
 }
 
@@ -325,13 +339,14 @@ func writeCSV(w http.ResponseWriter, r *http.Request, filename string, response 
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, saneFilename))
+	w.Header().Set("X-Filename", saneFilename)
+	w.WriteHeader(http.StatusOK)
+
 	err = gocsv.Marshal(response, w)
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Add("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, saneFilename))
-	w.Header().Add("X-Filename", saneFilename)
 }

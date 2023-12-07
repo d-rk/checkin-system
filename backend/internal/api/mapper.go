@@ -12,6 +12,8 @@ func toAPIUser(u *user.User) *User {
 	return &User{
 		Id:        u.ID,
 		Name:      u.Name,
+		MemberId:  u.MemberID.Ptr(),
+		RfidUid:   u.RFIDuid.Ptr(),
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt.Ptr(),
 	}
@@ -35,17 +37,21 @@ func fromAPIUser(u *User) *user.User {
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: null.TimeFromPtr(u.UpdatedAt),
 		Name:      u.Name,
+		MemberID:  null.StringFromPtr(u.MemberId),
+		RFIDuid:   null.StringFromPtr(u.RfidUid),
 	}
 }
 
 func fromAPINewUser(u *NewUser) *user.User {
 	return &user.User{
-		Name: u.Name,
+		Name:     u.Name,
+		MemberID: null.StringFromPtr(u.MemberId),
+		RFIDuid:  null.StringFromPtr(u.RfidUid),
 	}
 }
 
-func toAPICheckIn(c *checkin.CheckIn) *Checkin {
-	return &Checkin{
+func toAPICheckIn(c *checkin.CheckIn) *CheckIn {
+	return &CheckIn{
 		Id:        c.ID,
 		Date:      openapi_types.Date{Time: c.Date},
 		Timestamp: c.Timestamp.Format(time.RFC3339),
@@ -53,9 +59,9 @@ func toAPICheckIn(c *checkin.CheckIn) *Checkin {
 	}
 }
 
-func toAPICheckIns(checkIns []checkin.CheckIn) []Checkin {
+func toAPICheckIns(checkIns []checkin.CheckIn) []CheckIn {
 
-	result := make([]Checkin, len(checkIns))
+	result := make([]CheckIn, len(checkIns))
 
 	for i, c := range checkIns {
 		cc := c
@@ -65,8 +71,8 @@ func toAPICheckIns(checkIns []checkin.CheckIn) []Checkin {
 	return result
 }
 
-func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckinWithUser {
-	return &CheckinWithUser{
+func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckInWithUser {
+	return &CheckInWithUser{
 		Id:        c.ID,
 		Date:      openapi_types.Date{Time: c.Date},
 		Timestamp: c.Timestamp.Format(time.RFC3339),
@@ -75,9 +81,9 @@ func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckinWithUser {
 	}
 }
 
-func toAPICheckInsWithUser(checkins []checkin.CheckInWithUser) []CheckinWithUser {
+func toAPICheckInsWithUser(checkins []checkin.CheckInWithUser) []CheckInWithUser {
 
-	result := make([]CheckinWithUser, len(checkins))
+	result := make([]CheckInWithUser, len(checkins))
 
 	for i, c := range checkins {
 		cc := c
@@ -87,12 +93,12 @@ func toAPICheckInsWithUser(checkins []checkin.CheckInWithUser) []CheckinWithUser
 	return result
 }
 
-func toAPICheckInsDates(dates []checkin.CheckInDate) []CheckinDate {
+func toAPICheckInsDates(dates []checkin.CheckInDate) []CheckInDate {
 
-	result := make([]CheckinDate, len(dates))
+	result := make([]CheckInDate, len(dates))
 
 	for i, d := range dates {
-		result[i] = CheckinDate{
+		result[i] = CheckInDate{
 			Date: openapi_types.Date{d.Date},
 		}
 	}
