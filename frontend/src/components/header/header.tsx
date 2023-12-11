@@ -75,9 +75,16 @@ const Header = () => {
             </MenuList>
           </Menu>
         </HStack>
-        <NavLink to="/logout">
-          <Avatar />
-        </NavLink>
+        <Menu placement="bottom-start">
+          <MenuButton>
+            <Avatar />
+          </MenuButton>
+          <MenuList>
+            <MenuItem as={NavLink} to="/logout">
+              Logout
+            </MenuItem>
+          </MenuList>
+        </Menu>
       </Flex>
     </Box>
   );
