@@ -25,6 +25,7 @@ type Repository interface {
 	UpdateUser(ctx context.Context, user *User) (*User, error)
 	UpdateUserPassword(ctx context.Context, id int64, password string) error
 	updateAdminPassword(ctx context.Context, password string) error
+	ListUserGroups(ctx context.Context) ([]string, error)
 }
 
 type repository struct {
@@ -172,8 +173,8 @@ func (r *repository) SaveUser(ctx context.Context, user *User) (*User, error) {
 	user.CreatedAt = time.Now()
 
 	insertStatement, err := r.db.PrepareNamedContext(ctx, `INSERT INTO users
-    		(created_at, name, rfid_uid, member_id) VALUES
-            (:created_at, :name,:rfid_uid, :member_id) RETURNING id`)
+    		(created_at, name, rfid_uid, member_id, role, group_name) VALUES
+            (:created_at, :name,:rfid_uid, :member_id, :role, :group_name) RETURNING id`)
 
 	if err != nil {
 		return nil, err
@@ -197,8 +198,8 @@ func (r *repository) UpdateUser(ctx context.Context, user *User) (*User, error) 
 	user.UpdatedAt = null.TimeFrom(time.Now())
 
 	updateStatement, err := r.db.PrepareNamedContext(ctx, `UPDATE users SET
-    		(updated_at, name, rfid_uid, member_id) =
-            (:updated_at, :name,:rfid_uid, :member_id) WHERE id = :id`)
+    		(updated_at, name, rfid_uid, member_id, role, group_name) =
+            (:updated_at, :name,:rfid_uid, :member_id, :role, :group_name) WHERE id = :id`)
 
 	if err != nil {
 		return nil, err
@@ -229,7 +230,7 @@ func (r *repository) updateAdminPassword(ctx context.Context, password string) e
 	updateStatement, err := r.db.PrepareNamedContext(ctx, `UPDATE users SET
     		(updated_at, password_digest) =
             (current_timestamp, crypt(:password, gen_salt('bf')))
-             WHERE name = 'admin' and password_digest != crypt(:password, password_digest)`)
+             WHERE name = 'admin' and (password_digest is null or password_digest != crypt(:password, password_digest))`)
 
 	if err != nil {
 		return err
@@ -237,4 +238,15 @@ func (r *repository) updateAdminPassword(ctx context.Context, password string) e
 
 	_, err = updateStatement.ExecContext(ctx, map[string]interface{}{"password": password})
 	return err
+}
+
+func (r *repository) ListUserGroups(ctx context.Context) ([]string, error) {
+
+	groups := make([]string, 0)
+
+	if err := r.db.GetContext(ctx, &groups, "SELECT distinct group_name FROM users"); err != nil {
+		return nil, err
+	}
+
+	return groups, nil
 }

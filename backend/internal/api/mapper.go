@@ -12,6 +12,8 @@ func toAPIUser(u *user.User) *User {
 	return &User{
 		Id:        u.ID,
 		Name:      u.Name,
+		Group:     u.Group.Ptr(),
+		Role:      u.Role,
 		MemberId:  u.MemberID.Ptr(),
 		RfidUid:   u.RFIDuid.Ptr(),
 		CreatedAt: u.CreatedAt,
@@ -37,6 +39,8 @@ func fromAPIUser(u *User) *user.User {
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: null.TimeFromPtr(u.UpdatedAt),
 		Name:      u.Name,
+		Group:     null.StringFromPtr(u.Group),
+		Role:      u.Role,
 		MemberID:  null.StringFromPtr(u.MemberId),
 		RFIDuid:   null.StringFromPtr(u.RfidUid),
 	}
@@ -45,6 +49,8 @@ func fromAPIUser(u *User) *user.User {
 func fromAPINewUser(u *NewUser) *user.User {
 	return &user.User{
 		Name:     u.Name,
+		Group:    null.StringFromPtr(u.Group),
+		Role:     u.Role,
 		MemberID: null.StringFromPtr(u.MemberId),
 		RFIDuid:  null.StringFromPtr(u.RfidUid),
 	}
@@ -78,6 +84,8 @@ func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckInWithUser {
 		Timestamp: c.Timestamp.Format(time.RFC3339),
 		UserId:    c.UserID,
 		Name:      c.User.Name,
+		Group:     c.User.Group.Ptr(),
+		Role:      c.User.Role,
 	}
 }
 

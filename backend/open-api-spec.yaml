@@ -314,6 +314,22 @@ paths:
                 items:
                   $ref: "#/components/schemas/CheckInDate"
 
+  /api/v1/user-groups:
+    get:
+      tags:
+        - userGroup
+      description: list user groups
+      operationId: listUserGroups
+      responses:
+        "200":
+          description: "list of user group names"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+
 components:
   parameters:
     userIdPathParam:
@@ -353,12 +369,17 @@ components:
       type: object
       required:
         - name
+        - role
       properties:
         name:
           type: string
         memberId:
           type: string
         rfidUid:
+          type: string
+        role:
+          type: string
+        group:
           type: string
 
     User:

@@ -18,6 +18,7 @@ type Service interface {
 	UpdateUserPassword(ctx context.Context, id int64, password string) error
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteAllUsers(ctx context.Context) error
+	ListUserGroups(ctx context.Context) ([]string, error)
 }
 
 type service struct {
@@ -106,4 +107,8 @@ func (s *service) CreateUser(ctx context.Context, user *User) (*User, error) {
 
 func (s *service) UpdateUserPassword(ctx context.Context, id int64, password string) error {
 	return s.repo.UpdateUserPassword(ctx, id, password)
+}
+
+func (s *service) ListUserGroups(ctx context.Context) ([]string, error) {
+	return s.repo.ListUserGroups(ctx)
 }

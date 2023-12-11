@@ -318,6 +318,16 @@ func (h *apiHandler) GetUserCheckIns(w http.ResponseWriter, r *http.Request, use
 	}
 }
 
+func (h *apiHandler) ListUserGroups(w http.ResponseWriter, r *http.Request) {
+	groups, err := h.userService.ListUserGroups(r.Context())
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	writeJSON(w, r, http.StatusOK, groups)
+}
+
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {
 
 	w.Header().Set("Content-Type", "application/json")
