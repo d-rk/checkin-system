@@ -139,7 +139,7 @@ go run .
 
 ```
 cat > frontend/.env <<- EOM
-REACT_APP_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8080
 EOM
 ```
 

@@ -14,7 +14,7 @@ import {
 } from '@chakra-ui/react';
 import React from 'react';
 import {NavLink} from 'react-router-dom';
-import {ReactComponent as Logo} from '../../assets/logo.svg';
+import Logo from '../../assets/logo.svg?react';
 
 const links = [
   {name: 'Calendar', route: '/calendar'},
