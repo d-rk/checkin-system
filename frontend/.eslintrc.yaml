@@ -16,6 +16,7 @@ rules:
   react/display-name: 'warn'
   react/prop-types: 'warn'
   '@typescript-eslint/no-explicit-any': 'off'
+  "react/react-in-jsx-scope": "off"
 
 settings:
   react:
