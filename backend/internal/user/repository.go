@@ -243,9 +243,22 @@ func (r *repository) updateAdminPassword(ctx context.Context, password string) e
 func (r *repository) ListUserGroups(ctx context.Context) ([]string, error) {
 
 	groups := make([]string, 0)
+	rows, err := r.db.QueryContext(ctx, "SELECT distinct group_name FROM users where group_name is not null")
 
-	if err := r.db.GetContext(ctx, &groups, "SELECT distinct group_name FROM users"); err != nil {
-		return nil, err
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return groups, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	for rows.Next() {
+		var group string
+		if err = rows.Scan(&group); err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
 	}
 
 	return groups, nil

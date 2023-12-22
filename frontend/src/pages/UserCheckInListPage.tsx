@@ -58,7 +58,7 @@ export const UserCheckInListPage: FC = () => {
           console.log(`received rfid without user: ${payload.rfid_uid}`);
         }
       }),
-    []
+    [mutate, userId]
   );
 
   const handleDownload = () => {

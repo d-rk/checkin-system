@@ -9,6 +9,9 @@ export type UserFields = {
   name: string;
   memberId: string;
   rfidUid: string;
+  role: string;
+  group?: string;
+  password?: string;
 };
 
 export type User = UserFields & {
@@ -52,7 +55,7 @@ export const apiLogin = async (credentials: {
   username: string;
   password: string;
 }): Promise<BearerToken> => {
-  const response = await axios.post(`/api/login`, credentials);
+  const response = await axios.post('/api/login', credentials);
   return response.data;
 };
 
@@ -60,8 +63,12 @@ export const useUserList = (): SWRResponse<User[], Error> => {
   return useSWR<User[], Error>('/api/v1/users', fetcher);
 };
 
+export const useUserGroups = (): SWRResponse<string[], Error> => {
+  return useSWR<string[], Error>('/api/v1/user-groups', fetcher);
+};
+
 export const getAuthenticatedUser = async (): Promise<User> => {
-  const response = await axios.get(`/api/v1/users/me`);
+  const response = await axios.get('/api/v1/users/me');
   return response.data;
 };
 
@@ -77,7 +84,7 @@ export const updateUser = (
   userId: number,
   user: UserFields
 ): Promise<AxiosResponse<User>> => {
-  return axios.put(`/api/v1/users/${userId}`, user);
+  return axios.put(`/api/v1/users/${userId}`, {id: userId, ...user});
 };
 
 export const addUser = (user: UserFields): Promise<AxiosResponse<User>> => {

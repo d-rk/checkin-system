@@ -56,7 +56,7 @@ func (s *service) GetUserByNameAndPassword(ctx context.Context, name, password s
 
 func (s *service) UpdateUser(ctx context.Context, user *User) (*User, error) {
 
-	user, err := s.repo.GetUserByID(ctx, user.ID)
+	_, err := s.repo.GetUserByID(ctx, user.ID)
 	if err != nil {
 		return nil, app.NotFoundErr
 	}

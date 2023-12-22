@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Checkbox,
   FormControl,
@@ -9,53 +10,90 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import React, {FC} from 'react';
-import {useForm} from 'react-hook-form';
+import {Controller, useForm} from 'react-hook-form';
 import {
   createWebsocket,
   isCheckInMessage,
   User,
   UserFields,
 } from '../../api/checkInSystemApi';
+import {CreatableSelect} from 'chakra-react-select';
 
 type Props = {
   user?: User;
+  groups: string[];
   onSubmit: (inputs: UserFields) => void;
 };
 
-export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
+type SelectOption = {
+  label: string;
+  value: string | null;
+};
+
+export const UserEditForm: FC<Props> = ({user, groups, onSubmit}) => {
   const {
     register,
     handleSubmit,
+    control,
     setValue,
     formState: {errors, isSubmitting},
   } = useForm<UserFields>({
     defaultValues: {
       name: user?.name,
       rfidUid: user?.rfidUid,
+      role: user?.role,
       memberId: user?.memberId,
     },
   });
 
-  const [rfidViaWebsocket, setRfidViaWebsocket] = React.useState(true);
+  const [isAdmin, setIsAdmin] = React.useState(user?.role === 'ADMIN');
+
+  const groupsWithNull: SelectOption[] = [
+    {label: '-', value: null},
+    ...groups.map(g => {
+      return {label: g, value: g};
+    }),
+  ];
+
+  const [groupOptions, setGroupOptions] = React.useState(groupsWithNull);
 
   React.useMemo(
     () =>
       createWebsocket((payload: any) => {
-        if (rfidViaWebsocket && isCheckInMessage(payload)) {
+        if (isCheckInMessage(payload)) {
           setValue('rfidUid', payload.rfid_uid);
         }
       }),
-    []
+    [setValue]
   );
 
-  const toggleRfidViaWebsocket = () => {
-    setRfidViaWebsocket(prevChecked => !prevChecked);
+  React.useEffect(() => {
+    setValue('role', isAdmin ? 'ADMIN' : 'USER');
+  }, [setValue, isAdmin]);
+
+  React.useEffect(() => {
+    // workaround: if we use the defaultValue on the Controller,
+    // clearing the select no longer works
+    setValue('group', user?.group);
+  }, [setValue, user?.group]);
+
+  const toggleIsAdmin = () => {
+    setIsAdmin(prevChecked => !prevChecked);
+  };
+
+  const handleCreateGroup = (value: string) => {
+    if (!groupOptions.some(g => g.value === value)) {
+      setGroupOptions(prevState => {
+        return [...prevState, {label: value, value: value}];
+      });
+    }
+    setValue('group', value);
   };
 
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <SimpleGrid spacing={10}>
+        <SimpleGrid spacing={10} columns={2}>
           <FormControl isInvalid={errors?.name !== undefined}>
             <FormLabel>Name</FormLabel>
             <Input
@@ -64,11 +102,12 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
               })}
               placeholder="enter name"
             />
-            <FormHelperText>Name to identify user</FormHelperText>
             <FormErrorMessage>
               {errors.name && errors.name.message}
             </FormErrorMessage>
           </FormControl>
+
+          <Box />
 
           <FormControl isInvalid={errors?.memberId !== undefined}>
             <FormLabel>Member ID</FormLabel>
@@ -76,36 +115,73 @@ export const UserEditForm: FC<Props> = ({user, onSubmit}) => {
               {...register('memberId', {})}
               placeholder="enter member id"
             />
-            <FormHelperText>Member id of user</FormHelperText>
             <FormErrorMessage>
               {errors.memberId && errors.memberId.message}
+            </FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={errors?.group !== undefined}>
+            <FormLabel>Group</FormLabel>
+
+            <Controller
+              control={control}
+              name="group"
+              render={({field: {onChange, value, ref}}) => (
+                <CreatableSelect
+                  ref={ref}
+                  value={groupOptions.filter(g => g.value === value)}
+                  onChange={val => onChange(val?.value)}
+                  onCreateOption={handleCreateGroup}
+                  options={groupOptions}
+                  placeholder="choose group"
+                  isClearable
+                />
+              )}
+            />
+            <FormErrorMessage>
+              {errors.group && errors.group.message}
             </FormErrorMessage>
           </FormControl>
 
           <FormControl isInvalid={errors?.rfidUid !== undefined}>
             <FormLabel>RFID UID</FormLabel>
             <Input
-              {...register('rfidUid', {required: 'field is required'})}
-              placeholder={
-                rfidViaWebsocket
-                  ? 'waiting for rfid token...'
-                  : 'id of the rfid token'
-              }
-              disabled={rfidViaWebsocket}
+              {...register('rfidUid', {})}
+              placeholder="waiting for rfid token..."
             />
             <FormHelperText>
-              {rfidViaWebsocket
-                ? 'Place rfid token near reader'
-                : 'Enter the id of the rfid token'}
+              Place rfid token near reader or enter id manually
             </FormHelperText>
             <FormErrorMessage>
               {errors.rfidUid && errors.rfidUid.message}
             </FormErrorMessage>
           </FormControl>
 
-          <Checkbox onChange={toggleRfidViaWebsocket}>
-            Enter rfid_uid manually
-          </Checkbox>
+          <Box />
+
+          <Box>
+            <FormLabel>Admin Access</FormLabel>
+            <Checkbox onChange={toggleIsAdmin} isChecked={isAdmin}>
+              Administrator
+            </Checkbox>
+          </Box>
+
+          {isAdmin && (
+            <FormControl isInvalid={errors?.password !== undefined}>
+              <FormLabel>Password</FormLabel>
+              <Input
+                {...register(
+                  'password',
+                  !user ? {required: 'field is required'} : {}
+                )}
+                placeholder="enter password"
+                type="password"
+              />
+              <FormErrorMessage>
+                {errors.password && errors.password.message}
+              </FormErrorMessage>
+            </FormControl>
+          )}
         </SimpleGrid>
 
         <Button

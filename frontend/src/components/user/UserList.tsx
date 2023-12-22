@@ -29,6 +29,7 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
           <Tr>
             <Th>Name</Th>
             <Th>Member ID</Th>
+            <Th>Group</Th>
             <Th>RFID UID</Th>
             <Th textAlign="right">Actions</Th>
           </Tr>
@@ -38,6 +39,7 @@ const UserList: FC<Props> = ({users, onShowCheckIns, onEdit, onDelete}) => {
             <Tr key={user.id}>
               <Td>{user.name}</Td>
               <Td>{user.memberId}</Td>
+              <Td>{user.group}</Td>
               <Td>{user.rfidUid}</Td>
               <Td textAlign="right">
                 <IconButton

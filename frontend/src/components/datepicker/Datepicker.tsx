@@ -73,7 +73,7 @@ export const Datepicker: FC<Props> = ({date, onDateChange}) => {
 
       return onDateChange(date);
     }
-  }, [value]);
+  }, [value, onDateChange]);
 
   return (
     <>

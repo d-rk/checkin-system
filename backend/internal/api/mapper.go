@@ -10,14 +10,12 @@ import (
 
 func toAPIUser(u *user.User) *User {
 	return &User{
-		Id:        u.ID,
-		Name:      u.Name,
-		Group:     u.Group.Ptr(),
-		Role:      u.Role,
-		MemberId:  u.MemberID.Ptr(),
-		RfidUid:   u.RFIDuid.Ptr(),
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: u.UpdatedAt.Ptr(),
+		Id:       u.ID,
+		Name:     u.Name,
+		Group:    u.Group.Ptr(),
+		Role:     u.Role,
+		MemberId: u.MemberID.Ptr(),
+		RfidUid:  u.RFIDuid.Ptr(),
 	}
 }
 
@@ -35,14 +33,12 @@ func toAPIUsers(users []user.User) []User {
 
 func fromAPIUser(u *User) *user.User {
 	return &user.User{
-		ID:        u.Id,
-		CreatedAt: u.CreatedAt,
-		UpdatedAt: null.TimeFromPtr(u.UpdatedAt),
-		Name:      u.Name,
-		Group:     null.StringFromPtr(u.Group),
-		Role:      u.Role,
-		MemberID:  null.StringFromPtr(u.MemberId),
-		RFIDuid:   null.StringFromPtr(u.RfidUid),
+		ID:       u.Id,
+		Name:     u.Name,
+		Group:    null.StringFromPtr(u.Group),
+		Role:     u.Role,
+		MemberID: null.StringFromPtr(u.MemberId),
+		RFIDuid:  null.StringFromPtr(u.RfidUid),
 	}
 }
 

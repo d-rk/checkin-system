@@ -41,8 +41,8 @@
       "last 1 safari version"
     ]
   },
-  "lint-staged":{
-    "**/*.{js,jsx,ts,tsx}":[
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
       "npx prettier --write",
       "npx eslint --fix"
     ]
@@ -78,6 +78,7 @@
     "@emotion/styled": "^11.11.0",
     "@uselessdev/datepicker": "^2.7.0",
     "axios": "^1.6.2",
+    "chakra-react-select": "^4.7.6",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "js-file-download": "^0.4.12",

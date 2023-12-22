@@ -18,7 +18,12 @@ type Props = {
 export const ModalDialog: FC<Props> = ({title, isOpen, onClose, children}) => {
   return (
     <>
-      <Modal blockScrollOnMount={false} isOpen={isOpen} onClose={onClose}>
+      <Modal
+        blockScrollOnMount={false}
+        isOpen={isOpen}
+        onClose={onClose}
+        size={'xl'}
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>{title}</ModalHeader>

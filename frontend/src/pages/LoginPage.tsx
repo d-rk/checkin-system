@@ -21,7 +21,7 @@ const LoginPage: FC = () => {
 
   async function handleSubmit({username, password, rememberMe}: LoginFields) {
     try {
-      const user = await auth.login(username, password, rememberMe);
+      await auth.login(username, password, rememberMe);
       navigate(from, {replace: true});
     } catch (error) {
       toast(errorToast('login failed', error));

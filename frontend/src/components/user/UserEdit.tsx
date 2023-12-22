@@ -11,6 +11,7 @@ import {
   updateUser,
   User,
   UserFields,
+  useUserGroups,
 } from '../../api/checkInSystemApi';
 import {errorToast} from '../../utils/toast';
 import {ModalDialog} from '../ModalDialog';
@@ -29,6 +30,8 @@ const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
   ref
 ) => {
   const toast = useToast();
+
+  const {data: groups, error: fetchGroupsError} = useUserGroups();
 
   const {isOpen, onOpen, onClose} = useDisclosure();
 
@@ -52,6 +55,10 @@ const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
     },
   }));
 
+  if (fetchGroupsError) {
+    toast(errorToast('unable to fetch user groups', fetchGroupsError));
+  }
+
   async function handleSubmit(userFields: UserFields) {
     try {
       let updateResponse;
@@ -69,7 +76,7 @@ const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
 
   return (
     <ModalDialog title="Add User" isOpen={isOpen} onClose={onClose}>
-      <UserEditForm onSubmit={handleSubmit} user={user} />
+      <UserEditForm onSubmit={handleSubmit} user={user} groups={groups ?? []} />
     </ModalDialog>
   );
 };

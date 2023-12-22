@@ -51,7 +51,7 @@ export const CheckInListPage: FC = () => {
           }
         }
       }),
-    []
+    [date, mutate]
   );
 
   if (!date) {
