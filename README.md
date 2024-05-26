@@ -33,6 +33,19 @@ Download the [Fritzing File](raspi/fritzing/rfid_reader.fzz).
 
 ### Install and configure the raspi
 
+#### DietPi
+
+The easiest way to install and configure a raspi is by using DietPi.
+
+1. Download DietPi Image from https://dietpi.com/#download
+2. Flash `DietPi_RPi-ARMv8-Bookworm.img` to SD card
+3. Patch the image `./dietpi-patch.sh <folder-where-sd-card-is-mounted-to>`
+
+#### Manual
+
+When installing a different distribution on the Raspi, the following steps
+describe the steps needed to get everything running.
+
 Install dependencies:
 
 ```
@@ -132,7 +145,7 @@ EOM
 
 ```
 cd backend
-go run .
+go run ./...
 ```
 
 4. Create an `.env` file for the frontend
