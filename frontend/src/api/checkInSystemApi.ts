@@ -7,8 +7,8 @@ import {WEBSOCKET_BASE_URL} from './config';
 
 export type UserFields = {
   name: string;
-  memberId: string;
-  rfidUid: string;
+  memberId?: string;
+  rfidUid?: string;
   role: string;
   group?: string;
   password?: string;

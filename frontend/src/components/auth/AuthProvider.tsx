@@ -4,6 +4,7 @@ import {Navigate, useLocation} from 'react-router-dom';
 import {apiLogin, getAuthenticatedUser, User} from '../../api/checkInSystemApi';
 import axios from 'axios';
 import {LoadingPage} from '../../pages/LoadingPage';
+import {ADMIN_USER, ADMIN_PASSWORD, AUTO_LOGIN} from '../../api/config';
 
 interface AuthContextType {
   token: string | null;
@@ -26,19 +27,30 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
   const [isTokenExpired, setTokenExpired] = React.useState<boolean>(false);
 
   useEffect(() => {
-    if (token === null) {
+    if (token === null && !AUTO_LOGIN) {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
       setUserLoading(false);
       return;
     }
 
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUserLoading(true);
     const fetchUser = async () => {
       try {
+        setUserLoading(true);
+
+        let loginToken = token;
+
+        if (AUTO_LOGIN && token === null) {
+          const {token} = await apiLogin({
+            username: ADMIN_USER,
+            password: ADMIN_PASSWORD,
+          });
+          loginToken = token;
+        }
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${loginToken}`;
         const user = await getAuthenticatedUser();
-        setToken(token);
+        setToken(loginToken);
         setUser(user);
       } catch (ex) {
         setTokenExpired(true);

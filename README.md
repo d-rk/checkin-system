@@ -138,6 +138,18 @@ DB_PORT=5432
 DB_SSL_MODE=disable
 
 CORS_ALLOWED_ORIGINS=*
+
+# days after which checkIn will be deleted
+CHECKIN_RETENTION_DAYS=100
+
+# secret to sign bearer tokens with
+API_SECRET=yoursecretstring
+
+# token expiry duration
+TOKEN_EXPIRY_HOURS=1
+
+# password for initial admin account
+ADMIN_PASSWORD=secret
 EOM
 ```
 
@@ -153,6 +165,9 @@ go run ./...
 ```
 cat > frontend/.env <<- EOM
 VITE_API_BASE_URL=http://localhost:8080
+# optional admin credentials for auto login 
+VITE_ADMIN_USER=admin
+VITE_ADMIN_PASSWORD=secret
 EOM
 ```
 

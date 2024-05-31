@@ -7,6 +7,8 @@ import {
   FormHelperText,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   SimpleGrid,
 } from '@chakra-ui/react';
 import React, {FC} from 'react';
@@ -30,6 +32,14 @@ type SelectOption = {
   value: string | null;
 };
 
+function removeEmptyFields(data: Record<string, any>) {
+  Object.keys(data).forEach(key => {
+    if (data[key] === '' || data[key] === null) {
+      delete data[key];
+    }
+  });
+}
+
 export const UserEditForm: FC<Props> = ({user, groups, onSubmit}) => {
   const {
     register,
@@ -46,6 +56,7 @@ export const UserEditForm: FC<Props> = ({user, groups, onSubmit}) => {
     },
   });
 
+  const [showPassword, setShowPassword] = React.useState(false);
   const [isAdmin, setIsAdmin] = React.useState(user?.role === 'ADMIN');
 
   const groupsWithNull: SelectOption[] = [
@@ -90,9 +101,14 @@ export const UserEditForm: FC<Props> = ({user, groups, onSubmit}) => {
     setValue('group', value);
   };
 
+  const onSubmitInternal = (inputs: UserFields) => {
+    removeEmptyFields(inputs);
+    onSubmit(inputs);
+  };
+
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmitInternal)}>
         <SimpleGrid spacing={10} columns={2}>
           <FormControl isInvalid={errors?.name !== undefined}>
             <FormLabel>Name</FormLabel>
@@ -169,14 +185,27 @@ export const UserEditForm: FC<Props> = ({user, groups, onSubmit}) => {
           {isAdmin && (
             <FormControl isInvalid={errors?.password !== undefined}>
               <FormLabel>Password</FormLabel>
-              <Input
-                {...register(
-                  'password',
-                  !user ? {required: 'field is required'} : {}
-                )}
-                placeholder="enter password"
-                type="password"
-              />
+              <InputGroup size="md">
+                <Input
+                  pr="4.5rem"
+                  {...register(
+                    'password',
+                    !user ? {required: 'field is required'} : {}
+                  )}
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter password"
+                  autoComplete="new-password"
+                />
+                <InputRightElement width="4.5rem">
+                  <Button
+                    h="1.75rem"
+                    size="sm"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </Button>
+                </InputRightElement>
+              </InputGroup>
               <FormErrorMessage>
                 {errors.password && errors.password.message}
               </FormErrorMessage>
