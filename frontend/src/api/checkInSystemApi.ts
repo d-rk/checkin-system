@@ -87,6 +87,13 @@ export const updateUser = (
   return axios.put(`/api/v1/users/${userId}`, {id: userId, ...user});
 };
 
+export const updateUserPassword = (
+  userId: number,
+  password: string
+): Promise<AxiosResponse<User>> => {
+  return axios.put(`/api/v1/users/${userId}/password`, {password: password});
+};
+
 export const addUser = (user: UserFields): Promise<AxiosResponse<User>> => {
   return axios.post('/api/v1/users', user);
 };

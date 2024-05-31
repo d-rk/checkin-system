@@ -215,7 +215,7 @@ func (r *repository) UpdateUserPassword(ctx context.Context, id int64, password 
 	updateStatement, err := r.db.PrepareNamedContext(ctx, `UPDATE users SET
     		(updated_at, password_digest) =
             (current_timestamp, crypt(:password, gen_salt('bf')))
-             WHERE id = :id and password_digest != crypt(:password, password_digest)`)
+             WHERE id = :id and (password_digest is null or password_digest != crypt(:password, password_digest))`)
 
 	if err != nil {
 		return err

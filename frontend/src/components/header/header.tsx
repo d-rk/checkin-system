@@ -15,6 +15,7 @@ import {
 import React from 'react';
 import {NavLink} from 'react-router-dom';
 import Logo from '../../assets/logo.svg?react';
+import {useAuth} from '../auth/AuthProvider';
 
 const links = [
   {name: 'Calendar', route: '/calendar'},
@@ -24,6 +25,7 @@ const links = [
 
 const Header = () => {
   const hoverBg = useColorModeValue('gray.200', 'gray.700');
+  const {user} = useAuth();
 
   return (
     <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
@@ -80,6 +82,9 @@ const Header = () => {
             <Avatar />
           </MenuButton>
           <MenuList>
+            <Box bg="blue.100" w="100%" p={2}>
+              Logged in as <b>{user?.name}</b>
+            </Box>
             <MenuItem as={NavLink} to="/logout">
               Logout
             </MenuItem>

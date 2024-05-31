@@ -9,6 +9,7 @@ import {
   addUser,
   getUser,
   updateUser,
+  updateUserPassword,
   User,
   UserFields,
   useUserGroups,
@@ -64,6 +65,9 @@ const UserEditComponent: ForwardRefRenderFunction<UserEditRef, Props> = (
       let updateResponse;
       if (user) {
         updateResponse = await updateUser(user.id, userFields);
+        if (userFields.password) {
+          await updateUserPassword(user.id, userFields.password);
+        }
       } else {
         updateResponse = await addUser(userFields);
       }
