@@ -4,7 +4,7 @@ import {Navigate, useLocation} from 'react-router-dom';
 import {apiLogin, getAuthenticatedUser, User} from '../../api/checkInSystemApi';
 import axios from 'axios';
 import {LoadingPage} from '../../pages/LoadingPage';
-import {ADMIN_USER, ADMIN_PASSWORD, AUTO_LOGIN} from '../../api/config';
+import {API_USER, API_PASSWORD, AUTO_LOGIN} from '../../api/config';
 
 interface AuthContextType {
   token: string | null;
@@ -42,8 +42,8 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
 
         if (AUTO_LOGIN && token === null) {
           const {token} = await apiLogin({
-            username: ADMIN_USER,
-            password: ADMIN_PASSWORD,
+            username: API_USER,
+            password: API_PASSWORD,
           });
           loginToken = token;
         }

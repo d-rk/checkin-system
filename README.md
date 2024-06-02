@@ -166,8 +166,8 @@ go run ./...
 cat > frontend/.env <<- EOM
 VITE_API_BASE_URL=http://localhost:8080
 # optional admin credentials for auto login 
-VITE_ADMIN_USER=admin
-VITE_ADMIN_PASSWORD=secret
+VITE_API_USER=admin
+VITE_API_PASSWORD=secret
 EOM
 ```
 

@@ -22,6 +22,8 @@ GPIO.output(LED_RED_GPIO, GPIO.LOW)
 
 
 API_BASE_URL = os.getenv("API_BASEURL", "http://localhost:8080")
+API_USER = os.getenv("API_USER")
+API_PASSWORD = os.getenv("API_PASSWORD")
 
 
 def wait_for_backend():

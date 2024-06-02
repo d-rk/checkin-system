@@ -36,6 +36,9 @@ services:
       - DB_SSL_MODE=disable
       - CORS_ALLOWED_ORIGINS=*
       - CHECKIN_RETENTION_DAYS=365
+      - API_SECRET=${API_SECRET}
+      - TOKEN_EXPIRY_HOURS=1
+      - ADMIN_PASSWORD=${API_ADMIN_PASSWORD}
     networks:
       - checkin-system-network
 
@@ -50,6 +53,9 @@ services:
       - backend
     ports:
       - "80:80"
+    environment:
+      - VITE_API_USER=admin
+      - VITE_API_PASSWORD=${API_ADMIN_PASSWORD}
     networks:
       - checkin-system-network
 
@@ -63,6 +69,8 @@ services:
     privileged: true
     environment:
       - API_BASEURL=http://backend:8080
+      - API_USER=admin
+      - API_PASSWORD=${API_ADMIN_PASSWORD}
     links:
       - backend
     networks:
