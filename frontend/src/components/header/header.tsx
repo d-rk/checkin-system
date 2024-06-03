@@ -25,10 +25,16 @@ const links = [
 
 const Header = () => {
   const hoverBg = useColorModeValue('gray.200', 'gray.700');
-  const {user} = useAuth();
+  const {user, isAuthenticated} = useAuth();
+
+  const gray = useColorModeValue('gray.100', 'gray.900');
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
-    <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4}>
+    <Box bg={gray} px={4}>
       <Flex h={16} alignItems={'center'} justifyContent={'space-between'}>
         <HStack spacing={8} alignItems={'center'}>
           <Box>

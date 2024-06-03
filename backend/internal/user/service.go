@@ -2,10 +2,14 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/d-rk/checkin-system/internal/app"
 	"github.com/d-rk/checkin-system/internal/websocket"
-	"os"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Service interface {
@@ -30,12 +34,12 @@ func NewService(repo Repository, websocket *websocket.Server) Service {
 
 	adminPassword := os.Getenv("ADMIN_PASSWORD")
 
-	if adminPassword != "" {
-		if err := repo.updateAdminPassword(context.Background(), adminPassword); err != nil {
-			panic(err)
-		}
+	service := &service{repo, websocket}
+	if err := service.updateAdminPassword(context.Background(), adminPassword); err != nil {
+		panic(err)
 	}
-	return &service{repo, websocket}
+
+	return service
 }
 
 func (s *service) ListUsers(ctx context.Context) ([]User, error) {
@@ -51,7 +55,17 @@ func (s *service) GetUserByRfidUid(ctx context.Context, rfidUid string, excludeI
 }
 
 func (s *service) GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error) {
-	return s.repo.GetUserByNameAndPassword(ctx, name, password)
+
+	user, err := s.repo.GetUserByName(ctx, name, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if s.passwordEquals(user, password) {
+		return user, nil
+	} else {
+		return nil, app.NotFoundErr
+	}
 }
 
 func (s *service) UpdateUser(ctx context.Context, user *User) (*User, error) {
@@ -106,9 +120,58 @@ func (s *service) CreateUser(ctx context.Context, user *User) (*User, error) {
 }
 
 func (s *service) UpdateUserPassword(ctx context.Context, id int64, password string) error {
-	return s.repo.UpdateUserPassword(ctx, id, password)
+
+	if password == "" {
+		return fmt.Errorf("empty password provided: %w", app.ConflictErr)
+	}
+
+	user, err := s.repo.GetUserByID(context.Background(), id)
+	if err != nil {
+		return err
+	}
+
+	return s.updateUserPassword(ctx, user, password)
 }
 
 func (s *service) ListUserGroups(ctx context.Context) ([]string, error) {
 	return s.repo.ListUserGroups(ctx)
+}
+
+func (s *service) updateAdminPassword(ctx context.Context, password string) error {
+
+	if password == "" {
+		return nil
+	}
+
+	admin, err := s.repo.GetUserByName(ctx, "admin", nil)
+	if err != nil && errors.Is(err, app.NotFoundErr) {
+		log.Printf("not updating admin password. user not found")
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	return s.updateUserPassword(ctx, admin, password)
+}
+
+func (s *service) updateUserPassword(ctx context.Context, user *User, password string) error {
+
+	if s.passwordEquals(user, password) {
+		return nil
+	}
+
+	digest, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UpdateUserPasswordDigest(ctx, user.ID, string(digest))
+}
+
+func (s *service) passwordEquals(user *User, password string) bool {
+
+	if user.PasswordDigest.IsZero() {
+		return true
+	}
+	return bcrypt.CompareHashAndPassword([]byte(user.PasswordDigest.String), []byte(password)) != nil
 }

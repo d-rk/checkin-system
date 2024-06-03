@@ -129,6 +129,12 @@ docker run --name postgres \
 
 ```
 cat > backend/.env <<- EOM
+
+# sqlite db
+#DB_DRIVER=sqlite3
+#DB_NAME=checkin.db
+
+# postgres db
 DB_HOST=127.0.0.1
 DB_DRIVER=postgres
 DB_USER=postgres

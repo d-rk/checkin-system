@@ -17,14 +17,12 @@ type Repository interface {
 	ListUsers(ctx context.Context) ([]User, error)
 	GetUserByID(ctx context.Context, id int64) (*User, error)
 	GetUserByName(ctx context.Context, name string, excludeID *int64) (*User, error)
-	GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error)
 	GetUserByRfidUid(ctx context.Context, rfidUID string, excludeID int64) (*User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteAllUsers(ctx context.Context) error
 	SaveUser(ctx context.Context, user *User) (*User, error)
 	UpdateUser(ctx context.Context, user *User) (*User, error)
-	UpdateUserPassword(ctx context.Context, id int64, password string) error
-	updateAdminPassword(ctx context.Context, password string) error
+	UpdateUserPasswordDigest(ctx context.Context, id int64, passwordDigest string) error
 	ListUserGroups(ctx context.Context) ([]string, error)
 }
 
@@ -66,29 +64,7 @@ func (r *repository) GetUserByName(ctx context.Context, name string, excludeID *
 
 	user := User{}
 
-	if err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE name = $1 and id != $2", name, excludeID); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, app.NotFoundErr
-		} else {
-			return nil, err
-		}
-	}
-
-	return &user, nil
-}
-
-func (r *repository) GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error) {
-
-	user := User{}
-
-	stmt, err := r.db.PrepareNamedContext(ctx, `SELECT * FROM users
-		WHERE name = :name and password_digest = crypt(:password, password_digest)`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if err := stmt.GetContext(ctx, &user, map[string]interface{}{"name": name, "password": password}); err != nil {
+	if err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE name = $1 and ($2 is null or id != $2)", name, excludeID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, app.NotFoundErr
 		} else {
@@ -210,33 +186,17 @@ func (r *repository) UpdateUser(ctx context.Context, user *User) (*User, error) 
 	return user, nil
 }
 
-func (r *repository) UpdateUserPassword(ctx context.Context, id int64, password string) error {
+func (r *repository) UpdateUserPasswordDigest(ctx context.Context, id int64, passwordDigest string) error {
 
 	updateStatement, err := r.db.PrepareNamedContext(ctx, `UPDATE users SET
-    		(updated_at, password_digest) =
-            (current_timestamp, crypt(:password, gen_salt('bf')))
-             WHERE id = :id and (password_digest is null or password_digest != crypt(:password, password_digest))`)
+    		(updated_at, password_digest) = (current_timestamp, :passwordDigest)
+             WHERE id = :id`)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = updateStatement.ExecContext(ctx, map[string]interface{}{"id": id, "password": password})
-	return err
-}
-
-func (r *repository) updateAdminPassword(ctx context.Context, password string) error {
-
-	updateStatement, err := r.db.PrepareNamedContext(ctx, `UPDATE users SET
-    		(updated_at, password_digest) =
-            (current_timestamp, crypt(:password, gen_salt('bf')))
-             WHERE name = 'admin' and (password_digest is null or password_digest != crypt(:password, password_digest))`)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = updateStatement.ExecContext(ctx, map[string]interface{}{"password": password})
+	_, err = updateStatement.ExecContext(ctx, map[string]interface{}{"id": id, "passwordDigest": passwordDigest})
 	return err
 }
 

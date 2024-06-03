@@ -25,9 +25,10 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
   const [user, setUser] = React.useState<User | null>(null);
   const [isUserLoading, setUserLoading] = React.useState<boolean>(true);
   const [isTokenExpired, setTokenExpired] = React.useState<boolean>(false);
+  const [hasLoggedOut, setLoggedOut] = React.useState<boolean>(false);
 
   useEffect(() => {
-    if (token === null && !AUTO_LOGIN) {
+    if (token === null && (!AUTO_LOGIN || hasLoggedOut)) {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
       setUserLoading(false);
@@ -60,7 +61,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
       }
     };
     fetchUser();
-  }, [token]);
+  }, [token, hasLoggedOut]);
 
   const login = async (
     username: string,
@@ -83,6 +84,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
   };
 
   const logout = (): Promise<void> => {
+    setLoggedOut(true);
     setToken(null);
     setUser(null);
     return Promise.resolve();

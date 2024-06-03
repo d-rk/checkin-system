@@ -9,7 +9,12 @@ import {
 } from '@chakra-ui/react';
 import React, {FC, useRef} from 'react';
 import {useNavigate} from 'react-router-dom';
-import {deleteUser, User, useUserList} from '../api/checkInSystemApi';
+import {
+  deleteUser,
+  User,
+  useUserGroups,
+  useUserList,
+} from '../api/checkInSystemApi';
 import useModals from '../components/useModals';
 import {UserEdit, UserEditRef} from '../components/user/UserEdit';
 import UserList from '../components/user/UserList';
@@ -19,6 +24,7 @@ export const UserListPage: FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
   const {data: users, error, mutate} = useUserList();
+  const {mutate: mutateUserGroups} = useUserGroups();
   const userEditRef = useRef<UserEditRef>(null);
 
   const {confirm} = useModals();
@@ -38,6 +44,7 @@ export const UserListPage: FC = () => {
   const onUserEdited = (editUser: User) => {
     const otherUsers = users?.filter(user => user.id !== editUser.id) || [];
     mutate([...otherUsers, editUser]);
+    mutateUserGroups();
   };
 
   const onDeleteUser = async (userId: number) => {
@@ -45,6 +52,7 @@ export const UserListPage: FC = () => {
       try {
         await deleteUser(userId);
         mutate(users?.filter(u => u.id !== userId));
+        mutateUserGroups();
       } catch (error) {
         toast(errorToast('unable to delete user', error));
       }

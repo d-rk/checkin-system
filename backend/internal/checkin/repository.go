@@ -127,7 +127,18 @@ func (r *repository) DeleteCheckInsOlderThan(ctx context.Context, thresholdDays 
 
 	return database.WithTransaction(r.db, func(tx database.Tx) error {
 
-		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, `DELETE FROM checkins WHERE DATE_PART('day', now() - date) > $1`)
+		var query string
+
+		switch r.db.DriverName() {
+		case "postgres":
+			query = `DELETE FROM checkins WHERE DATE_PART('day', now() - date) > $1`
+		case "sqlite3":
+			query = `DELETE FROM checkins WHERE julianday('now') - julianday(date) > $1`
+		default:
+			return fmt.Errorf("unknown driver %s", r.db.DriverName())
+		}
+
+		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, query)
 
 		if err != nil {
 			return err

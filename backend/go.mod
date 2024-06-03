@@ -14,9 +14,11 @@ require (
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/oapi-codegen/nethttp-middleware v1.0.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/rubenv/sql-migrate v1.6.1
+	golang.org/x/crypto v0.23.0
 	golang.org/x/net v0.25.0
 	gopkg.in/guregu/null.v4 v4.0.0
 )
