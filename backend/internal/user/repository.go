@@ -16,7 +16,7 @@ import (
 type Repository interface {
 	ListUsers(ctx context.Context) ([]User, error)
 	GetUserByID(ctx context.Context, id int64) (*User, error)
-	GetUserByName(ctx context.Context, name string, excludeID *int64) (*User, error)
+	GetUserByName(ctx context.Context, name string, excludeID int64) (*User, error)
 	GetUserByRfidUid(ctx context.Context, rfidUID string, excludeID int64) (*User, error)
 	DeleteUser(ctx context.Context, id int64) error
 	DeleteAllUsers(ctx context.Context) error
@@ -60,11 +60,11 @@ func (r *repository) GetUserByID(ctx context.Context, uid int64) (*User, error) 
 	return &user, nil
 }
 
-func (r *repository) GetUserByName(ctx context.Context, name string, excludeID *int64) (*User, error) {
+func (r *repository) GetUserByName(ctx context.Context, name string, excludeID int64) (*User, error) {
 
 	user := User{}
 
-	if err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE name = $1 and ($2 is null or id != $2)", name, excludeID); err != nil {
+	if err := r.db.GetContext(ctx, &user, "SELECT * FROM users WHERE name = $1 and id != $2", name, excludeID); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, app.NotFoundErr
 		} else {

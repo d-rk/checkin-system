@@ -56,7 +56,7 @@ func (s *service) GetUserByRfidUid(ctx context.Context, rfidUid string, excludeI
 
 func (s *service) GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error) {
 
-	user, err := s.repo.GetUserByName(ctx, name, nil)
+	user, err := s.repo.GetUserByName(ctx, name, -1)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (s *service) UpdateUser(ctx context.Context, user *User) (*User, error) {
 		return nil, app.NotFoundErr
 	}
 
-	_, err = s.repo.GetUserByName(ctx, user.Name, &user.ID)
+	_, err = s.repo.GetUserByName(ctx, user.Name, user.ID)
 
 	if err == nil {
 		return nil, fmt.Errorf("user with name already exists: %w", app.ConflictErr)
@@ -102,7 +102,7 @@ func (s *service) DeleteAllUsers(ctx context.Context) error {
 
 func (s *service) CreateUser(ctx context.Context, user *User) (*User, error) {
 
-	_, err := s.repo.GetUserByName(ctx, user.Name, nil)
+	_, err := s.repo.GetUserByName(ctx, user.Name, -1)
 
 	if err == nil {
 		return nil, fmt.Errorf("user already exists: %w", app.ConflictErr)
@@ -143,7 +143,7 @@ func (s *service) updateAdminPassword(ctx context.Context, password string) erro
 		return nil
 	}
 
-	admin, err := s.repo.GetUserByName(ctx, "admin", nil)
+	admin, err := s.repo.GetUserByName(ctx, "admin", -1)
 	if err != nil && errors.Is(err, app.NotFoundErr) {
 		log.Printf("not updating admin password. user not found")
 		return nil
