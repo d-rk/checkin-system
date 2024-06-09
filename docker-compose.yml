@@ -37,7 +37,7 @@ services:
       - CORS_ALLOWED_ORIGINS=*
       - CHECKIN_RETENTION_DAYS=365
       - API_SECRET=${API_SECRET}
-      - TOKEN_EXPIRY_HOURS=1
+      - TOKEN_EXPIRY_MINUTES=60
       - ADMIN_PASSWORD=${API_ADMIN_PASSWORD}
     networks:
       - checkin-system-network

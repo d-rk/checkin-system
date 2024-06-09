@@ -152,7 +152,7 @@ CHECKIN_RETENTION_DAYS=100
 API_SECRET=yoursecretstring
 
 # token expiry duration
-TOKEN_EXPIRY_HOURS=1
+TOKEN_EXPIRY_MINUTES=60
 
 # password for initial admin account
 ADMIN_PASSWORD=secret

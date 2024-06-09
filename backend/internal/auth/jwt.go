@@ -18,7 +18,7 @@ type TokenClaims struct {
 func GenerateToken(userId int64) (string, error) {
 
 	now := time.Now()
-	tokenExpiryHours, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY_HOURS"))
+	tokenExpiryMinutes, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY_MINUTES"))
 
 	if err != nil {
 		return "", err
@@ -28,7 +28,7 @@ func GenerateToken(userId int64) (string, error) {
 		UserID: userId,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(tokenExpiryHours))),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * time.Duration(tokenExpiryMinutes))),
 		},
 	}
 

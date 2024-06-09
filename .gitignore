@@ -5,3 +5,5 @@ backend/checkin-system
 /backend/**/*.gen.go
 /frontend/.env
 *.db
+
+/raspi/rfid_reader/.venv

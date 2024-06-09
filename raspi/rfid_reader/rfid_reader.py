@@ -25,13 +25,41 @@ API_BASE_URL = os.getenv("API_BASEURL", "http://localhost:8080")
 API_USER = os.getenv("API_USER")
 API_PASSWORD = os.getenv("API_PASSWORD")
 
+session = requests.session()
+session.headers = {"Content-type": "application/json"}
+
+
+def get_token():
+    response = session.post(
+        f"{API_BASE_URL}/api/login",
+        data=json.dumps({"username": f"{API_USER}", "password": f"{API_PASSWORD}"})
+    )
+
+    if response.status_code == 200:
+        return response.json()["token"]
+    else:
+        print("login failed", "status", response.status_code, "response", response.json())
+        return None
+
+
+def refresh_token(response, *args, **kwargs):
+    if response.status_code == 401:
+        print("Fetching new token as the previous token expired")
+        token = get_token()
+        session.headers.update({"Authorization": f"Bearer {token}"})
+        response.request.headers["Authorization"] = session.headers["Authorization"]
+        return session.send(response.request, verify=False)
+
+
+session.hooks['response'].append(refresh_token)
+
 
 def wait_for_backend():
 
     healthy = False
 
     while not healthy:
-        r = requests.get(f"{API_BASE_URL}/api/v1/users")
+        r = session.get(f"{API_BASE_URL}/api/v1/users/me")
 
         healthy = r.status_code == 200
 
