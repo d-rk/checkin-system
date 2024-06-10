@@ -27,7 +27,7 @@ func NewRouter(ctx context.Context) chi.Router {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatalf("Error loading .env file")
+		log.Printf("Error loading .env file")
 	}
 
 	db := database.Connect()
