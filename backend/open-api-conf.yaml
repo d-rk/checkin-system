@@ -4,6 +4,6 @@ generate:
   chi-server: true
   strict-server: false
   embedded-spec: true
-output: ../../internal/api/api.gen.go
+output: ../../pkg/api/api.gen.go
 output-options:
   skip-prune: true

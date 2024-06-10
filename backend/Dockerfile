@@ -6,6 +6,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 
+RUN go generate ./...
+
 RUN go build -o checkin-system ./cmd/...
 
 FROM alpine:latest
