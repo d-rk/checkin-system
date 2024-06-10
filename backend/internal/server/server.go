@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-func Run() {
+func NewRouter(ctx context.Context) chi.Router {
 
 	err := godotenv.Load(".env")
 
@@ -40,11 +40,16 @@ func Run() {
 	userService := user.NewService(userRepo, ws)
 	checkinService := checkin.NewService(checkinRepo, userService, ws)
 
-	if err := checkinService.DeleteOldCheckIns(context.Background()); err != nil {
+	if err := checkinService.DeleteOldCheckIns(ctx); err != nil {
 		panic(err)
 	}
 
-	router := setupRouter(userService, checkinService, ws)
+	return setupRouter(userService, checkinService, ws)
+}
+
+func Run() {
+
+	router := NewRouter(context.Background())
 
 	srv := &http.Server{
 		Handler: router,
