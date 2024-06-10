@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	netHttpMiddleware "github.com/oapi-codegen/nethttp-middleware"
 	"log"
@@ -22,7 +23,7 @@ import (
 	"time"
 )
 
-func NewRouter(ctx context.Context, runMigration bool) chi.Router {
+func NewDB(runMigration bool) *sqlx.DB {
 
 	err := godotenv.Load(".env")
 
@@ -34,6 +35,17 @@ func NewRouter(ctx context.Context, runMigration bool) chi.Router {
 
 	if runMigration {
 		database.RunMigration(db)
+	}
+
+	return db
+}
+
+func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
+
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Printf("could not load .env file")
 	}
 
 	ws := &websocket.Server{}
@@ -53,7 +65,10 @@ func NewRouter(ctx context.Context, runMigration bool) chi.Router {
 
 func Run() {
 
-	router := NewRouter(context.Background(), true)
+	db := NewDB(true)
+	defer db.Close()
+
+	router := NewRouter(context.Background(), db)
 
 	srv := &http.Server{
 		Handler: router,
