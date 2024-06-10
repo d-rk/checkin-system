@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 	migrate "github.com/rubenv/sql-migrate"
@@ -12,12 +11,6 @@ import (
 )
 
 func Connect() *sqlx.DB {
-
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
 
 	dbDriver := os.Getenv("DB_DRIVER")
 
