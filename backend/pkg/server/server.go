@@ -22,7 +22,7 @@ import (
 	"time"
 )
 
-func NewRouter(ctx context.Context) chi.Router {
+func NewRouter(ctx context.Context, runMigration bool) chi.Router {
 
 	err := godotenv.Load(".env")
 
@@ -31,6 +31,10 @@ func NewRouter(ctx context.Context) chi.Router {
 	}
 
 	db := database.Connect()
+
+	if runMigration {
+		database.RunMigration(db)
+	}
 
 	ws := &websocket.Server{}
 
@@ -49,7 +53,7 @@ func NewRouter(ctx context.Context) chi.Router {
 
 func Run() {
 
-	router := NewRouter(context.Background())
+	router := NewRouter(context.Background(), true)
 
 	srv := &http.Server{
 		Handler: router,

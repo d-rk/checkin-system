@@ -40,16 +40,10 @@ func Connect() *sqlx.DB {
 		log.Println(fmt.Sprintf("connected to database %s", dsn))
 	}
 
-	err = runMigration(db)
-
-	if err != nil {
-		log.Fatal("migration failed:", err)
-	}
-
 	return db
 }
 
-func runMigration(db *sqlx.DB) error {
+func RunMigration(db *sqlx.DB) {
 	migrations := &migrate.FileMigrationSource{
 		Dir: "db/migrations/" + db.DriverName(),
 	}
@@ -58,8 +52,7 @@ func runMigration(db *sqlx.DB) error {
 
 	n, err := migrate.Exec(db.DB, db.DriverName(), migrations, migrate.Up)
 	if err != nil {
-		return err
+		log.Fatal("migration failed:", err)
 	}
 	fmt.Printf("applied %d migrations\n", n)
-	return nil
 }
