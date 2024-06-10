@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/d-rk/checkin-system/internal/database"
+	"github.com/d-rk/checkin-system/pkg/database"
 	"time"
 
 	"github.com/jmoiron/sqlx"

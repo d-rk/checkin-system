@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/d-rk/checkin-system/internal/app"
-	"github.com/d-rk/checkin-system/internal/database"
+	"github.com/d-rk/checkin-system/pkg/app"
+	"github.com/d-rk/checkin-system/pkg/database"
 	"time"
 
 	"github.com/jmoiron/sqlx"

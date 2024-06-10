@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/d-rk/checkin-system/internal/server"
+	"github.com/d-rk/checkin-system/pkg/server"
 	"net/http"
 )
 

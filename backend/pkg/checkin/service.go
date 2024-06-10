@@ -3,9 +3,9 @@ package checkin
 import (
 	"context"
 	"errors"
-	"github.com/d-rk/checkin-system/internal/app"
-	"github.com/d-rk/checkin-system/internal/user"
-	"github.com/d-rk/checkin-system/internal/websocket"
+	"github.com/d-rk/checkin-system/pkg/app"
+	"github.com/d-rk/checkin-system/pkg/user"
+	"github.com/d-rk/checkin-system/pkg/websocket"
 	"os"
 	"strconv"
 	"time"

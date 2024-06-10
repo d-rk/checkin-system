@@ -2,11 +2,11 @@ package server
 
 import (
 	"context"
-	"github.com/d-rk/checkin-system/internal/api"
-	"github.com/d-rk/checkin-system/internal/checkin"
-	"github.com/d-rk/checkin-system/internal/database"
-	"github.com/d-rk/checkin-system/internal/user"
-	"github.com/d-rk/checkin-system/internal/websocket"
+	"github.com/d-rk/checkin-system/pkg/api"
+	"github.com/d-rk/checkin-system/pkg/checkin"
+	"github.com/d-rk/checkin-system/pkg/database"
+	"github.com/d-rk/checkin-system/pkg/user"
+	"github.com/d-rk/checkin-system/pkg/websocket"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"

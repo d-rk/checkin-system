@@ -1,7 +1,7 @@
 package checkin
 
 import (
-	"github.com/d-rk/checkin-system/internal/user"
+	"github.com/d-rk/checkin-system/pkg/user"
 	"time"
 )
 

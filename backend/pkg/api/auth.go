@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/d-rk/checkin-system/internal/auth"
+	"github.com/d-rk/checkin-system/pkg/auth"
 	"golang.org/x/net/context"
 	"net/http"
 )

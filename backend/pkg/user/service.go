@@ -7,8 +7,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/d-rk/checkin-system/internal/app"
-	"github.com/d-rk/checkin-system/internal/websocket"
+	"github.com/d-rk/checkin-system/pkg/app"
+	"github.com/d-rk/checkin-system/pkg/websocket"
 	"golang.org/x/crypto/bcrypt"
 )
 

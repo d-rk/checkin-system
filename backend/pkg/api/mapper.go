@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/d-rk/checkin-system/internal/checkin"
-	"github.com/d-rk/checkin-system/internal/user"
+	"github.com/d-rk/checkin-system/pkg/checkin"
+	"github.com/d-rk/checkin-system/pkg/user"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"gopkg.in/guregu/null.v4"
 	"time"
