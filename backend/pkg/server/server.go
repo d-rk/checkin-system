@@ -25,12 +25,7 @@ import (
 
 func NewDB(runMigration bool) *sqlx.DB {
 
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Printf("Error loading .env file")
-	}
-
+	_ = godotenv.Load(".env")
 	db := database.Connect()
 
 	if runMigration {
@@ -41,12 +36,6 @@ func NewDB(runMigration bool) *sqlx.DB {
 }
 
 func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
-
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Printf("could not load .env file")
-	}
 
 	ws := &websocket.Server{}
 
