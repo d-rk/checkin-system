@@ -4,6 +4,10 @@
     {
       "src": "/api/(.*)",
       "dest": "/api/index.go"
+    },
+    {
+      "src": "/websocket",
+      "dest": "/api/index.go"
     }
   ]
 }
