@@ -8,7 +8,6 @@ env:
   browser: true
 
 rules:
-  node/no-unpublished-import: 'warn'
   no-return-await: 'error'
   no-throw-literal: 'error'
   promise/prefer-await-to-then: 'error'

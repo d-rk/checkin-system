@@ -12,6 +12,7 @@ RUN go build -o checkin-system ./cmd/...
 
 FROM alpine:latest
 COPY --from=builder /app/checkin-system /checkin-system
+COPY --from=builder /app/db /db
 
 RUN touch .env
 

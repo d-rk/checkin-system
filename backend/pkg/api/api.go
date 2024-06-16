@@ -220,6 +220,9 @@ func (h *apiHandler) CreateRfidCheckIn(w http.ResponseWriter, r *http.Request, p
 		if errors.Is(err, app.ConflictErr) {
 			handlerError(w, r, ConflictErr.Wrap(err))
 			return
+		} else if errors.Is(err, app.NotFoundErr) {
+			handlerError(w, r, NotFoundErr.Wrap(err))
+			return
 		} else {
 			handlerError(w, r, err)
 			return

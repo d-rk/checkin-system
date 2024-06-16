@@ -38,8 +38,13 @@ Download the [Fritzing File](raspi/fritzing/rfid_reader.fzz).
 The easiest way to install and configure a raspi is by using DietPi.
 
 1. Download DietPi Image from https://dietpi.com/#download
-2. Flash `DietPi_RPi-ARMv8-Bookworm.img` to SD card
-3. Patch the image `./dietpi-patch.sh <folder-where-sd-card-is-mounted-to>`
+2. Flash `DietPi_RPi-ARMv8-Bookworm.img.xz` to SD card
+3. Go to `raspi/dietpi` and patch the image `./patch.sh <folder-where-sd-card-is-mounted-to>`
+4. After first boot of the PI, run `/boot/checkin-system/post-install.sh` locally.
+
+After the setup the raspi is available via:
+1. USB Ethernet with ip 192.168.12.1
+2. WLAN Hotspot with ip 192.168.14.1
 
 #### Manual
 
@@ -189,14 +194,10 @@ npm start
 on an arm64 machine clone the repo an run:
 
 ```shell
-# build
-git pull
-docker-compose build --pull
-
 # login to quay.io / user-settings / Generate Encrypted Password
 export QUAY_IO_PASSWORD=xxx
 echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
 
-# push
-docker-compose push
+# build and push 
+docker buildx bake --push
 ```

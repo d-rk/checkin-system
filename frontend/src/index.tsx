@@ -1,4 +1,4 @@
-import {ChakraProvider} from '@chakra-ui/react';
+import {ChakraProvider, Spinner} from '@chakra-ui/react';
 import {CalendarDefaultTheme} from '@uselessdev/datepicker';
 import React, {Suspense} from 'react';
 import ReactDOM from 'react-dom/client';
@@ -23,7 +23,7 @@ const root = ReactDOM.createRoot(rootElement!);
 
 root.render(
   <React.StrictMode>
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<Spinner />}>
       <ChakraProvider theme={CalendarDefaultTheme}>
         <AuthProvider>
           <ModalProvider>

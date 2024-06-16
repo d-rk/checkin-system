@@ -3,6 +3,7 @@ services:
   # postgres
   db:
     image: postgres:14.1-alpine
+    container_name: db
     restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
@@ -20,7 +21,12 @@ services:
     build:
       context: ./backend
       dockerfile: "Dockerfile"
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     image: quay.io/d_rk/checkin-system-backend
+    container_name: backend
     restart: unless-stopped
     links:
       - db
@@ -47,7 +53,12 @@ services:
     build:
       context: ./frontend
       dockerfile: "Dockerfile"
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     image: quay.io/d_rk/checkin-system-frontend
+    container_name: frontend
     restart: unless-stopped
     links:
       - backend
@@ -64,7 +75,12 @@ services:
     build:
       context: ./raspi/rfid_reader
       dockerfile: "Dockerfile"
+      x-bake:
+        platforms:
+          - linux/amd64
+          - linux/arm64
     image: quay.io/d_rk/checkin-system-reader
+    container_name: rfid-reader
     restart: unless-stopped
     privileged: true
     environment:
