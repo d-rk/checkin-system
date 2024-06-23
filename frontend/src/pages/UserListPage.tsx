@@ -19,7 +19,7 @@ import useModals from '../components/useModals';
 import {UserEdit, UserEditRef} from '../components/user/UserEdit';
 import UserList from '../components/user/UserList';
 import {errorToast} from '../utils/toast';
-import { LoadingPage } from "./LoadingPage";
+import {LoadingPage} from './LoadingPage';
 
 export const UserListPage: FC = () => {
   const navigate = useNavigate();
@@ -65,7 +65,7 @@ export const UserListPage: FC = () => {
   }
 
   if (isLoading) {
-    return <LoadingPage />
+    return <LoadingPage />;
   }
 
   return (
