@@ -28,6 +28,7 @@ const CheckInList: FC<Props> = ({checkIns, onDelete}) => {
           <Tr>
             <Th>Time</Th>
             <Th>User</Th>
+            <Th>Group</Th>
             <Th textAlign="right">Actions</Th>
           </Tr>
         </Thead>
@@ -42,6 +43,7 @@ const CheckInList: FC<Props> = ({checkIns, onDelete}) => {
                 )}
               </Td>
               <Td>{checkIn.user.name}</Td>
+              <Td>{checkIn.user.group}</Td>
               <Td textAlign="right">
                 <IconButton
                   colorScheme="red"

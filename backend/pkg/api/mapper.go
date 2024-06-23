@@ -79,9 +79,14 @@ func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckInWithUser {
 		Date:      openapi_types.Date{Time: c.Date},
 		Timestamp: c.Timestamp.Format(time.RFC3339),
 		UserId:    c.UserID,
-		Name:      c.User.Name,
-		Group:     c.User.Group.Ptr(),
-		Role:      c.User.Role,
+		User: User{
+			Id:       c.User.ID,
+			Name:     c.User.Name,
+			Group:    c.User.Group.Ptr(),
+			MemberId: c.User.MemberID.Ptr(),
+			RfidUid:  c.User.RFIDuid.Ptr(),
+			Role:     c.User.Role,
+		},
 	}
 }
 
@@ -103,7 +108,7 @@ func toAPICheckInsDates(dates []checkin.CheckInDate) []CheckInDate {
 
 	for i, d := range dates {
 		result[i] = CheckInDate{
-			Date: openapi_types.Date{d.Date},
+			Date: openapi_types.Date{Time: d.Date},
 		}
 	}
 

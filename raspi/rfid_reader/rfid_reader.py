@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 #
-import RPi.GPIO as GPIO
-from mfrc522 import SimpleMFRC522
 import json
 import os
 import traceback
@@ -9,19 +7,11 @@ from time import sleep
 
 import requests
 
-GPIO.setmode(GPIO.BCM)
+from raspi import RaspiAccess
+#from raspi_dummy import RaspiAccessDummy
 
-BUZZER_GPIO = 4
-LED_GREEN_GPIO = 17
-LED_RED_GPIO = 27
-
-GPIO.setup(BUZZER_GPIO, GPIO.OUT)
-GPIO.setup(LED_GREEN_GPIO, GPIO.OUT)
-GPIO.setup(LED_RED_GPIO, GPIO.OUT)
-
-GPIO.output(LED_GREEN_GPIO, GPIO.LOW)
-GPIO.output(LED_RED_GPIO, GPIO.LOW)
-
+raspi = RaspiAccess()
+#raspi = RaspiAccessDummy()
 
 API_BASE_URL = os.getenv("API_BASEURL", "http://localhost:8080")
 API_USER = os.getenv("API_USER")
@@ -90,8 +80,7 @@ def wait_for_backend():
 
         healthy = success and response.status_code == 200
 
-        GPIO.output(LED_GREEN_GPIO, healthy)
-        GPIO.output(LED_RED_GPIO, not healthy)
+        raspi.set_lights(healthy, not healthy)
 
         if not healthy:
             print("backend not reachable...")
@@ -108,19 +97,15 @@ def post_rfid_id(id):
         print(parse_json(response))
 
     if success and response.status_code == 200:
-        GPIO.output(BUZZER_GPIO, GPIO.HIGH)
-        GPIO.output(LED_GREEN_GPIO, GPIO.HIGH)
-        GPIO.output(LED_RED_GPIO, GPIO.LOW)
+        raspi.set_buzzer(True)
+        raspi.set_lights(True, False)
         sleep(0.3)
     else:
-        GPIO.output(BUZZER_GPIO, GPIO.HIGH)
-        GPIO.output(LED_GREEN_GPIO, GPIO.LOW)
-        GPIO.output(LED_RED_GPIO, GPIO.HIGH)
-        sleep(0.3)
+        raspi.set_buzzer(True)
+        raspi.set_lights(False, True)
 
-    GPIO.output(BUZZER_GPIO, GPIO.LOW)
-    GPIO.output(LED_GREEN_GPIO, GPIO.LOW)
-    GPIO.output(LED_RED_GPIO, GPIO.LOW)
+    raspi.set_buzzer(False)
+    raspi.set_lights(False, False)
     sleep(2.0)
 
 
@@ -128,14 +113,11 @@ wait_for_backend()
 
 print("waiting for card....")
 
-reader = SimpleMFRC522()
-
 try:
     while True:
-        id, text = reader.read()
-        post_rfid_id(id)
+        rfid_id, text = raspi.read_rfid()
+        post_rfid_id(rfid_id)
 finally:
-    GPIO.output(BUZZER_GPIO, GPIO.LOW)
-    GPIO.output(LED_GREEN_GPIO, GPIO.LOW)
-    GPIO.output(LED_RED_GPIO, GPIO.LOW)
-    GPIO.cleanup()
+    raspi.set_buzzer(False)
+    raspi.set_lights(False, False)
+    raspi.cleanup()

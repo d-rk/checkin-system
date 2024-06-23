@@ -42,6 +42,13 @@ export type BearerToken = {
   token: string;
 };
 
+type Credentials = {
+  username: string;
+  password: string;
+};
+
+let lastCredentials: Credentials;
+
 export const isCheckInMessage = (message: any): message is CheckInMessage => {
   return (message as CheckInMessage).rfid_uid !== undefined;
 };
@@ -51,12 +58,21 @@ const fetcher = async (url: string) => {
   return result.data;
 };
 
-export const apiLogin = async (credentials: {
-  username: string;
-  password: string;
-}): Promise<BearerToken> => {
+export const apiLogin = async (
+  credentials: Credentials
+): Promise<BearerToken> => {
   const response = await axios.post('/api/login', credentials);
+
+  if (response.status === 200) {
+    lastCredentials = credentials;
+  }
+
   return response.data;
+};
+
+export const refreshAccessToken = async () => {
+  // not really a refresh of token atm
+  return apiLogin(lastCredentials);
 };
 
 export const useUserList = (): SWRResponse<User[], Error> => {

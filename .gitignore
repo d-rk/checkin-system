@@ -6,6 +6,7 @@ backend/checkin-system
 frontend/.env
 frontend/dist
 *.db
+*.gen.go
 
 /raspi/rfid_reader/.venv
 .env

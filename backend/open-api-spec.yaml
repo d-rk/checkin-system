@@ -418,7 +418,12 @@ components:
     CheckInWithUser:
       allOf:
         - $ref: '#/components/schemas/CheckIn'
-        - $ref: '#/components/schemas/User'
+        - type: object
+          required:
+            - user
+          properties:
+            user:
+                $ref: '#/components/schemas/User'
 
     CheckInDate:
       type: object

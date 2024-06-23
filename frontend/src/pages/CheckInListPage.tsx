@@ -1,7 +1,7 @@
 import {DownloadIcon} from '@chakra-ui/icons';
 import {Box, Button, Center, useToast} from '@chakra-ui/react';
 import {format, parse} from 'date-fns';
-import React, {FC, useEffect, useState} from 'react';
+import React, {FC, useCallback, useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {
   createWebsocket,
@@ -25,7 +25,6 @@ const parseDay = (day?: string) => {
 
 export const CheckInListPage: FC = () => {
   const {day} = useParams();
-
   const [date, setDate] = useState<Date>(parseDay(day));
 
   useEffect(() => {
@@ -52,6 +51,13 @@ export const CheckInListPage: FC = () => {
         }
       }),
     [date, mutate]
+  );
+
+  const handleDateChanged = useCallback(
+    (date: Date) => {
+      setDate(date);
+    },
+    [setDate]
   );
 
   if (!date) {
@@ -87,7 +93,7 @@ export const CheckInListPage: FC = () => {
       <Box>
         <CheckInFilter
           date={date}
-          onDateChange={(date: Date) => setDate(date)}
+          onDateChange={handleDateChanged}
           onDownload={handleDownload}
         />
         <CheckInList checkIns={checkIns ?? []} onDelete={onDeleteCheckIn} />
