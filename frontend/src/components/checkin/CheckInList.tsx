@@ -47,8 +47,8 @@ const CheckInList: FC<Props> = ({checkIns, onDelete}) => {
               <Td textAlign="right">
                 <IconButton
                   colorScheme="red"
-                  aria-label="Delete User"
-                  title="Delete User"
+                  aria-label="Delete CheckIn"
+                  title="Delete CheckIn"
                   icon={<DeleteIcon />}
                   onClick={() => onDelete(checkIn.id)}
                 />

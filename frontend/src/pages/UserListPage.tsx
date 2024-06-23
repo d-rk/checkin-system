@@ -19,11 +19,12 @@ import useModals from '../components/useModals';
 import {UserEdit, UserEditRef} from '../components/user/UserEdit';
 import UserList from '../components/user/UserList';
 import {errorToast} from '../utils/toast';
+import { LoadingPage } from "./LoadingPage";
 
 export const UserListPage: FC = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const {data: users, error, mutate} = useUserList();
+  const {data: users, isLoading, error, mutate} = useUserList();
   const {mutate: mutateUserGroups} = useUserGroups();
   const userEditRef = useRef<UserEditRef>(null);
 
@@ -61,6 +62,10 @@ export const UserListPage: FC = () => {
 
   if (error) {
     toast(errorToast('unable to list users', error));
+  }
+
+  if (isLoading) {
+    return <LoadingPage />
   }
 
   return (

@@ -3,9 +3,11 @@ package checkin
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/user"
 	"github.com/d-rk/checkin-system/pkg/websocket"
+	"github.com/lib/pq"
 	"os"
 	"strconv"
 	"time"
@@ -109,7 +111,16 @@ func (s *service) createCheckinForUser(ctx context.Context, user *user.User, tim
 		UserID:    user.ID,
 	}
 
-	return s.repo.SaveCheckIn(ctx, &checkIn)
+	savedCheckIn, err := s.repo.SaveCheckIn(ctx, &checkIn)
+
+	var pgErr *pq.Error
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == "23505" {
+			return nil, fmt.Errorf("checkIn for day already exists: %w", app.ConflictErr)
+		}
+	}
+
+	return savedCheckIn, err
 }
 
 func (s *service) DeleteCheckInByID(ctx context.Context, checkinID int64) error {

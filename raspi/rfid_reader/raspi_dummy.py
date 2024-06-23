@@ -1,7 +1,7 @@
 import sys
 
 
-class RaspiAccessDummy:
+class RaspiAccess:
 
     def set_lights(self, green_on, red_on):
         green = "🟩" if green_on else "⬜"

@@ -11,7 +11,6 @@ from raspi import RaspiAccess
 #from raspi_dummy import RaspiAccessDummy
 
 raspi = RaspiAccess()
-#raspi = RaspiAccessDummy()
 
 API_BASE_URL = os.getenv("API_BASEURL", "http://localhost:8080")
 API_USER = os.getenv("API_USER")
@@ -96,7 +95,7 @@ def post_rfid_id(id):
         print(response.status_code)
         print(parse_json(response))
 
-    if success and response.status_code == 200:
+    if success and (response.status_code == 200 or response.status_code == 201):
         raspi.set_buzzer(True)
         raspi.set_lights(True, False)
         sleep(0.3)

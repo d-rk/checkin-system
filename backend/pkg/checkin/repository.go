@@ -97,7 +97,7 @@ func (r *repository) DeleteCheckInByID(ctx context.Context, id int64) error {
 
 	return database.WithTransaction(r.db, func(tx database.Tx) error {
 
-		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, `DELETE FROM checkins WHERE user_id = $1`)
+		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, `DELETE FROM checkins WHERE id = $1`)
 
 		if err != nil {
 			return err

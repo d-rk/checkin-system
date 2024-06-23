@@ -14,6 +14,7 @@ import {
 import {CheckInFilter} from '../components/checkin/CheckinFilter';
 import CheckInList from '../components/checkin/CheckInList';
 import {errorToast} from '../utils/toast';
+import { LoadingPage } from "./LoadingPage";
 
 const parseDay = (day?: string) => {
   if (day) {
@@ -32,7 +33,7 @@ export const CheckInListPage: FC = () => {
   }, [day]);
 
   const toast = useToast();
-  const {data: checkIns, error, mutate} = useCheckInList(date);
+  const {data: checkIns,isLoading, error, mutate} = useCheckInList(date);
 
   React.useMemo(
     () =>
@@ -62,6 +63,10 @@ export const CheckInListPage: FC = () => {
 
   if (!date) {
     return null;
+  }
+
+  if (isLoading) {
+    return <LoadingPage />
   }
 
   const handleDownload = () => {
