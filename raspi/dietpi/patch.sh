@@ -16,7 +16,7 @@ if [[ $# -eq 0 ]]; then
   usage
 fi
 
-TARGET_DIR=$1
+TARGET_DIR=$(realpath -s "$1")
 
 if [ ! -d "$TARGET_DIR" ]; then
   echo "$TARGET_DIR does not exist."
@@ -63,10 +63,13 @@ sed -i -E 's/^#?(dtparam=spi)=.*/\1=on/' "$CONFIG_FILE"
 
 # enable i2c interface
 sed -i -E 's/^#?(dtparam=i2c_arm)=.*/\1=on/' "$CONFIG_FILE"
-sed -i -E 's/^#?(dtparam=i2c_arm_baudrate=100000).*/\1/' "$CONFIG_FILE"
+#sed -i -E 's/^#?(dtparam=i2c_arm_baudrate=100000).*/\1/' "$CONFIG_FILE"
 
 # use dwc2 USB driver (usb network interface)
 echo "dtoverlay=dwc2" >> "$CONFIG_FILE"
+
+# module for RTC
+echo "dtoverlay=i2c-rtc,pcf8523" >> "$CONFIG_FILE"
 
 finish_patch "$CONFIG_FILE"
 
@@ -144,6 +147,12 @@ AUTO_SETUP_INSTALL_SOFTWARE_ID=162
 # install docker compose
 AUTO_SETUP_INSTALL_SOFTWARE_ID=134
 
+# install vim
+AUTO_SETUP_INSTALL_SOFTWARE_ID=20
+
+# install I2C
+AUTO_SETUP_INSTALL_SOFTWARE_ID=72
+
 ### SOFTWARE_END
 EOF
 )
@@ -182,5 +191,8 @@ SCRIPT_DIR="$TARGET_DIR/checkin-system"
 mkdir -p "$SCRIPT_DIR"
 cp post-install.sh "$SCRIPT_DIR/post-install.sh"
 echo "copied $SCRIPT_DIR/post-install.sh"
+
+cp wlan-switch.sh "$SCRIPT_DIR/wlan-switch.sh"
+echo "copied $SCRIPT_DIR/wlan-switch.sh"
 
 echo "done"

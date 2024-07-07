@@ -99,6 +99,28 @@ wme_enabled=1
 EOM
 cat /etc/hostapd/hostapd.conf
 
+cd /usr/bin
+ln -s /boot/checkin-system/wlan-switch.sh wlan-switch
+
+echo ""
+echo "configure RTC..."
+
+sudo modprobe i2c-dev
+sudo i2cdetect -y 1
+
+sudo apt -y remove fake-hwclock
+sudo update-rc.d -f fake-hwclock remove
+
+cp /lib/udev/hwclock-set /lib/udev/hwclock-set.bak
+sed -i '/\/run\/systemd\/system/,/fi/ s/^/#/' /lib/udev/hwclock-set
+diff --color "/lib/udev/hwclock-set.bak" "/lib/udev/hwclock-set" || true
+
+echo "hardware clock: $(hwclock -r)"
+echo "system clock: $(date)"
+
+hwclock -w
+echo "updated hardware clock: $(hwclock -r)"
+
 echo ""
 echo "downloading docker-compose file..."
 cd /root

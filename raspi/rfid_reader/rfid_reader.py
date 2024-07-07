@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #
 import json
+import sys
 import os
 import traceback
 from time import sleep
@@ -15,6 +16,14 @@ raspi = RaspiAccess()
 API_BASE_URL = os.getenv("API_BASEURL", "http://localhost:8080")
 API_USER = os.getenv("API_USER")
 API_PASSWORD = os.getenv("API_PASSWORD")
+
+if API_USER is None:
+    print("env variable missing: API_USER")
+    sys.exit(-2)
+
+if API_PASSWORD is None:
+    print("env variable missing: API_PASSWORD")
+    sys.exit(-2)
 
 session = requests.session()
 session.headers = {"Content-type": "application/json"}
@@ -59,13 +68,17 @@ def get_token():
         return None
 
 
-def refresh_token(response, *args, **kwargs):
-    if response.status_code == 401:
+def refresh_token(response):
+    if not response.request.url.endswith("/api/login") and response.status_code == 401:
         print("Fetching new token as the previous token expired")
         token = get_token()
-        session.headers.update({"Authorization": f"Bearer {token}"})
-        response.request.headers["Authorization"] = session.headers["Authorization"]
-        return session.send(response.request, verify=False)
+
+        if token is None:
+            raise Exception("unable to refresh token")
+        else:
+            session.headers.update({"Authorization": f"Bearer {token}"})
+            response.request.headers["Authorization"] = session.headers["Authorization"]
+            return session.send(response.request, verify=False)
 
 
 session.hooks['response'].append(refresh_token)
@@ -102,6 +115,7 @@ def post_rfid_id(id):
     else:
         raspi.set_buzzer(True)
         raspi.set_lights(False, True)
+        sleep(0.3)
 
     raspi.set_buzzer(False)
     raspi.set_lights(False, False)

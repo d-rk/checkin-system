@@ -6,7 +6,7 @@ over-engineered checkin-system that can be deployed to a raspberry pi.
 
 ## Hardware
 
-The system uses a rasperry pi with a custom shield to read RFID tokens
+The system uses a raspberry pi with a custom shield to read RFID tokens
 and provide visual and acoustic feedback.
 
 ### Building the raspi shield
