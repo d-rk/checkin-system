@@ -68,7 +68,7 @@ def get_token():
         return None
 
 
-def refresh_token(response):
+def refresh_token(response, *args, **kwargs):
     if not response.request.url.endswith("/api/login") and response.status_code == 401:
         print("Fetching new token as the previous token expired")
         token = get_token()
@@ -121,6 +121,8 @@ def post_rfid_id(id):
     raspi.set_lights(False, False)
     sleep(2.0)
 
+
+print("waiting for backend....")
 
 wait_for_backend()
 
