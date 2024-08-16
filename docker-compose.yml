@@ -63,9 +63,6 @@ services:
       - backend
     ports:
       - "80:80"
-    environment:
-      - VITE_API_USER=admin
-      - VITE_API_PASSWORD=${API_ADMIN_PASSWORD}
     networks:
       - checkin-system-network
 
