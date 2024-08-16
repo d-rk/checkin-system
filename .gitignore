@@ -1,5 +1,6 @@
 .vscode
 .idea
+*.iml
 backend/.env
 backend/.vercel
 backend/checkin-system
