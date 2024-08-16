@@ -114,6 +114,54 @@ docker-compose up -d
 
 The frontend will then be accessible under http://localhost:3000/
 
+## Connecting to the RASPI
+
+The raspi can be accessed via ssh or http.
+The WI-FI module of the raspi can be in one of two modes: Hotspot or Wlan Client.
+
+After connecting via ssh you can switch to between Hotspot/Client mode with the following command:
+```shell
+wlan-switch
+```
+
+### Via WI-FI (Hotspot)
+
+When the device is in Hotspot mode, connect to the following network:
+ - SSID: `CheckInHotspot`
+ - Password: `check1n!`
+
+Afterward, connect to the raspi:
+
+```shell
+# http
+http://192.168.14.1
+
+# ssh (password: see above)
+ssh root@192.168.14.1
+```
+
+### Via WI-FI (Client)
+
+When the device is in Client mode, you can look up the ip of the raspi on your router.
+With this ip you can connect like in Hotspot mode.
+
+### Via USB
+
+You can connect the raspi to a PC using a Micro-USB to USB-A Cable. Make sure to use the
+inner one of the two Micro-USB Ports.
+
+For Windows: You have to install a special driver for this to work. see: https://github.com/d-rk/windows_10_raspi_usb_otg_fix 
+
+Afterward, connect to the raspi:
+
+```shell
+# http
+http://192.168.12.1
+
+# ssh (password: see above)
+ssh root@192.168.14.1
+```
+
 ## development
 
 this chapter discribes steps needed when developing the software.
