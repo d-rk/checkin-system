@@ -1,10 +1,11 @@
 import {FC, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
+import {Navigate, useLocation, useNavigate} from 'react-router-dom';
 import {useAuth} from '../components/auth/AuthProvider';
 import {LoginForm, LoginFields} from '../components/login/LoginForm';
 import {errorToast} from '../utils/toast';
 import {useToast} from '@chakra-ui/react';
 import {LoadingPage} from './LoadingPage';
+import * as React from 'react';
 
 interface LocationState {
   from: {
@@ -35,6 +36,10 @@ const LoginPage: FC = () => {
 
   if (isLoading) {
     return <LoadingPage />;
+  }
+
+  if (auth.isAuthenticated) {
+    return <Navigate to="/" replace />;
   }
 
   return <LoginForm onSubmit={handleSubmit} />;

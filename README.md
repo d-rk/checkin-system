@@ -189,6 +189,22 @@ cd frontend
 npm start
 ```
 
+### simplify working with different raspis
+
+To simplify connecting to different raspis via USB and avoiding host key check
+errors add the following to your `~/.ssh/config`:
+
+```shell
+Host checkin
+    HostName 192.168.12.1
+    User root
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+    Port 22
+```
+
+And then just use: `ssh checkin`
+
 ### build/publish docker images
 
 on an arm64 machine clone the repo an run:

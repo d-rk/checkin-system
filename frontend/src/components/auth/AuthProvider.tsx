@@ -47,6 +47,10 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
             password: API_PASSWORD,
           });
           loginToken = token;
+        } else if (token === null) {
+          console.log(
+            `no auto login API_USER=${!!API_USER} API_PASSWORD=${!!API_PASSWORD}`
+          );
         }
 
         axios.defaults.headers.common['Authorization'] = `Bearer ${loginToken}`;

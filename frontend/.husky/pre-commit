@@ -3,4 +3,4 @@
 
 cd frontend
 
-npm run lint:fix
+npm run fix

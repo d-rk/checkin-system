@@ -11,7 +11,7 @@
     "prepare": "npm run husky-install",
     "husky-install": "cd .. && husky install frontend/.husky",
     "lint": "gts lint",
-    "lint:fix": "gts fix"
+    "fix": "gts fix"
   },
   "type": "module",
   "devDependencies": {
