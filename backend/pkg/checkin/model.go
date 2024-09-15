@@ -14,7 +14,7 @@ type CheckIn struct {
 
 type CheckInWithUser struct {
 	CheckIn
-	User user.User `db:"user" json:"user" csv:"-"`
+	User user.User `db:"user" json:"user" csv:"user"`
 }
 
 type CheckInDate struct {

@@ -9,7 +9,7 @@ from time import sleep
 import requests
 
 from raspi import RaspiAccess
-#from raspi_dummy import RaspiAccessDummy
+#from raspi_dummy import RaspiAccess
 
 raspi = RaspiAccess()
 
