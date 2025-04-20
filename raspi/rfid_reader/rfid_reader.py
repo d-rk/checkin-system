@@ -99,6 +99,22 @@ def wait_for_backend():
             sleep(5)
 
 
+def show_result(success):
+
+    raspi.set_buzzer(True)
+    time = 0
+    increment = 50
+
+    while time < 600:
+        toggle = (time % 100) == 0
+        raspi.set_lights(success and toggle, (not success) and toggle)
+        time += increment
+        sleep(increment / 1000.0)
+
+        if success and time > 150:
+            raspi.set_buzzer(False)
+
+
 def post_rfid_id(id):
     print("rfid_uid:", id)
     headers = {"Content-type": "application/json"}
@@ -109,16 +125,12 @@ def post_rfid_id(id):
         print(parse_json(response))
 
     if success and (response.status_code == 200 or response.status_code == 201):
-        raspi.set_buzzer(True)
-        raspi.set_lights(True, False)
-        sleep(0.3)
+        show_result(True)
     else:
-        raspi.set_buzzer(True)
-        raspi.set_lights(False, True)
-        sleep(0.3)
+        show_result(False)
 
     raspi.set_buzzer(False)
-    raspi.set_lights(False, False)
+    raspi.set_lights(True, False)
     sleep(2.0)
 
 
