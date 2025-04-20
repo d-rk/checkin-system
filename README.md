@@ -262,6 +262,10 @@ on an arm64 machine clone the repo an run:
 export QUAY_IO_PASSWORD=xxx
 echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
 
-# build and push 
+# build and push with tag
+git tag v2.2 # create tag
+TAG=$(git describe --tags --abbrev=0) docker buildx bake --push
+
+# build and push latest
 docker buildx bake --push
 ```

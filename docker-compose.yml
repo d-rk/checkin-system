@@ -20,6 +20,8 @@ services:
     build:
       context: ./backend
       dockerfile: "Dockerfile"
+      tags:
+        - quay.io/d_rk/checkin-system-backend:${TAG:-latest}
       x-bake:
         platforms:
           - linux/amd64
@@ -52,6 +54,8 @@ services:
     build:
       context: ./frontend
       dockerfile: "Dockerfile"
+      tags:
+        - quay.io/d_rk/checkin-system-frontend:${TAG:-latest}
       x-bake:
         platforms:
           - linux/amd64
@@ -71,6 +75,8 @@ services:
     build:
       context: ./raspi/rfid_reader
       dockerfile: "Dockerfile"
+      tags:
+        - quay.io/d_rk/checkin-system-reader:${TAG:-latest}
       x-bake:
         platforms:
           - linux/amd64

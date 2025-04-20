@@ -1,7 +1,7 @@
 # build environment
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 WORKDIR /app
-ENV PATH /app/node_modules/.bin:$PATH
+ENV PATH=/app/node_modules/.bin:$PATH
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm config set fetch-retry-mintimeout 100000
