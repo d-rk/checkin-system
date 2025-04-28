@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/d-rk/checkin-system/pkg/api"
 	"github.com/d-rk/checkin-system/pkg/checkin"
+	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/database"
 	"github.com/d-rk/checkin-system/pkg/user"
 	"github.com/d-rk/checkin-system/pkg/websocket"
@@ -44,12 +45,13 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 
 	userService := user.NewService(userRepo, ws)
 	checkinService := checkin.NewService(checkinRepo, userService, ws)
+	clockService := clock.NewService()
 
 	if err := checkinService.DeleteOldCheckIns(ctx); err != nil {
 		panic(err)
 	}
 
-	return setupRouter(userService, checkinService, ws)
+	return setupRouter(userService, checkinService, clockService, ws)
 }
 
 func Run() {
@@ -68,7 +70,7 @@ func Run() {
 	log.Fatal(srv.ListenAndServe())
 }
 
-func setupRouter(userService user.Service, checkinService checkin.Service, ws *websocket.Server) chi.Router {
+func setupRouter(userService user.Service, checkinService checkin.Service, clockService clock.Service, ws *websocket.Server) chi.Router {
 
 	router := chi.NewRouter()
 
@@ -82,7 +84,7 @@ func setupRouter(userService user.Service, checkinService checkin.Service, ws *w
 	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
 
-	apiHandler := api.NewHandler(userService, checkinService)
+	apiHandler := api.NewHandler(userService, checkinService, clockService)
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)

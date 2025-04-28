@@ -7,7 +7,7 @@ type ApiErrorResponse = {
 
 export const errorToast = (
   message: string,
-  error: unknown
+  error?: unknown
 ): UseToastOptions => {
   if (axios.isAxiosError(error)) {
     // add message from api call

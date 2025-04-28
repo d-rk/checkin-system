@@ -38,6 +38,11 @@ export type CheckInDate = {
   date: string;
 };
 
+export type Clock = {
+  refTimestamp: string;
+  timestamp: string;
+};
+
 export type BearerToken = {
   token: string;
 };
@@ -81,6 +86,13 @@ export const useUserList = (): SWRResponse<User[], Error> => {
 
 export const useUserGroups = (): SWRResponse<string[], Error> => {
   return useSWR<string[], Error>('/api/v1/user-groups', fetcher);
+};
+
+export const useClock = (ref: Date): SWRResponse<Clock, Error> => {
+  return useSWR<Clock, Error>(
+    `/api/v1/clock?ref=${ref.toISOString()}`,
+    fetcher
+  );
 };
 
 export const getAuthenticatedUser = async (): Promise<User> => {

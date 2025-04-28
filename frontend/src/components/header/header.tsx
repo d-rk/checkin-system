@@ -1,4 +1,4 @@
-import {HamburgerIcon} from '@chakra-ui/icons';
+import {HamburgerIcon, WarningTwoIcon} from '@chakra-ui/icons';
 import {
   Avatar,
   Box,
@@ -10,12 +10,17 @@ import {
   MenuButton,
   MenuItem,
   MenuList,
+  Tooltip,
   useColorModeValue,
+  useToast,
 } from '@chakra-ui/react';
-import React from 'react';
+import React, {useCallback, useEffect, useMemo} from 'react';
 import {NavLink} from 'react-router-dom';
 import Logo from '../../assets/logo.svg?react';
 import {useAuth} from '../auth/AuthProvider';
+import {useClock} from '../../api/checkInSystemApi';
+import {parseISO} from 'date-fns';
+import {errorToast} from '../../utils/toast';
 
 const links = [
   {name: 'Calendar', route: '/calendar'},
@@ -26,6 +31,39 @@ const links = [
 const Header = () => {
   const hoverBg = useColorModeValue('gray.200', 'gray.700');
   const {user, isAuthenticated} = useAuth();
+
+  const now = useMemo(() => new Date(), []);
+
+  const {data: clock} = useClock(now);
+  const toast = useToast();
+
+  const clockDiff = useMemo(() => {
+    if (clock) {
+      const refTime = parseISO(clock?.refTimestamp);
+      const clockTime = parseISO(clock?.timestamp);
+      return Math.abs((refTime.getTime() - clockTime.getTime()) / 1000);
+    }
+  }, [clock]);
+
+  const clockOutOfSync = useMemo(() => {
+    return clockDiff !== undefined && clockDiff > 60;
+  }, [clockDiff]);
+
+  const showOutOfSyncToast = useCallback(() => {
+    if (clock && clockDiff) {
+      toast(
+        errorToast(
+          `hardware clock shows ${clock?.timestamp}, which is out of sync by ${clockDiff / 60} minutes`
+        )
+      );
+    }
+  }, [clock, clockDiff, toast]);
+
+  useEffect(() => {
+    if (clockOutOfSync) {
+      showOutOfSyncToast();
+    }
+  }, [showOutOfSyncToast, clockOutOfSync]);
 
   const gray = useColorModeValue('gray.100', 'gray.900');
 
@@ -83,6 +121,16 @@ const Header = () => {
             </MenuList>
           </Menu>
         </HStack>
+        <Box flexGrow={1} textAlign={'end'} px={2}>
+          {clockOutOfSync && (
+            <Tooltip label="Hardware Clock out of sync">
+              <IconButton aria-label="warn" onClick={showOutOfSyncToast}>
+                <WarningTwoIcon color="red.400" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Box>
+
         <Menu placement="bottom-start">
           <MenuButton>
             <Avatar />

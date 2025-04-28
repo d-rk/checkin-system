@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/d-rk/checkin-system/pkg/checkin"
+	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/user"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"gopkg.in/guregu/null.v4"
@@ -113,4 +114,11 @@ func toAPICheckInsDates(dates []checkin.CheckInDate) []CheckInDate {
 	}
 
 	return result
+}
+
+func toAPIClock(refTimestamp string, c *clock.Clock) *Clock {
+	return &Clock{
+		RefTimestamp: refTimestamp,
+		Timestamp:    c.Timestamp.Format(time.RFC3339),
+	}
 }

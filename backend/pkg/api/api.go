@@ -7,6 +7,7 @@ import (
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/auth"
 	"github.com/d-rk/checkin-system/pkg/checkin"
+	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/user"
 	"github.com/flytam/filenamify"
 	"github.com/gocarina/gocsv"
@@ -17,12 +18,14 @@ import (
 type apiHandler struct {
 	userService    user.Service
 	checkinService checkin.Service
+	clockService   clock.Service
 }
 
-func NewHandler(userService user.Service, checkinService checkin.Service) ServerInterface {
+func NewHandler(userService user.Service, checkinService checkin.Service, clockService clock.Service) ServerInterface {
 	return &apiHandler{
 		userService:    userService,
 		checkinService: checkinService,
+		clockService:   clockService,
 	}
 }
 
@@ -329,6 +332,15 @@ func (h *apiHandler) ListUserGroups(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, r, http.StatusOK, groups)
+}
+
+func (h *apiHandler) GetClock(w http.ResponseWriter, r *http.Request, params GetClockParams) {
+	c, err := h.clockService.GetClock(r.Context())
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, toAPIClock(params.Ref, &c))
 }
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {

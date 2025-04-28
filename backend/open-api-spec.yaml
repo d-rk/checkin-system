@@ -330,6 +330,27 @@ paths:
                 items:
                   type: string
 
+  /api/v1/clock:
+    get:
+      tags:
+        - clock
+      description: get current (hardware) time
+      operationId: getClock
+      parameters:
+        - in: query
+          name: ref
+          schema:
+            type: string
+            format: datetime
+          required: true
+      responses:
+        "200":
+          description: "current clock"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Clock"
+
 components:
   parameters:
     userIdPathParam:
@@ -433,6 +454,19 @@ components:
         date:
           type: string
           format: date
+
+    Clock:
+      type: object
+      required:
+        - refTimestamp
+        - timestamp
+      properties:
+        refTimestamp:
+          type: string
+          format: datetime
+        timestamp:
+          type: string
+          format: datetime
 
     BearerToken:
       type: object
