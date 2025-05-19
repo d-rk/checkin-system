@@ -182,7 +182,7 @@ sudo hwclock -w
 
 ## development
 
-this chapter discribes steps needed when developing the software.
+this chapter describes steps needed when developing the software.
 
 ### local dev environment setup
 

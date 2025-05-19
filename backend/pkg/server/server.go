@@ -48,7 +48,7 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 	clockService := clock.NewService()
 
 	if err := checkinService.DeleteOldCheckIns(ctx); err != nil {
-		panic(err)
+		slog.Warn("failed to delete old checkins", "error", err)
 	}
 
 	return setupRouter(userService, checkinService, clockService, ws)

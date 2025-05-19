@@ -2,8 +2,10 @@ package checkin
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/database"
 	"time"
 
@@ -15,6 +17,7 @@ type Repository interface {
 	ListCheckInsPerDay(ctx context.Context, date time.Time) ([]CheckInWithUser, error)
 	ListAllCheckIns(ctx context.Context) ([]CheckInWithUser, error)
 	ListUserCheckIns(ctx context.Context, userID int64) ([]CheckIn, error)
+	GetLatestCheckinDate(ctx context.Context) (*time.Time, error)
 	DeleteCheckInByID(ctx context.Context, id int64) error
 	DeleteCheckInsByUserID(ctx context.Context, userID int64) error
 	DeleteCheckInsOlderThan(ctx context.Context, thresholdDays int64) error
@@ -91,6 +94,25 @@ func (r *repository) ListUserCheckIns(ctx context.Context, userID int64) ([]Chec
 	}
 
 	return checkIns, nil
+}
+
+func (r *repository) GetLatestCheckinDate(ctx context.Context) (*time.Time, error) {
+
+	var timestamp sql.NullTime
+
+	if err := r.db.GetContext(ctx, &timestamp, "SELECT max(timestamp) FROM checkins"); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, app.NotFoundErr
+		} else {
+			return nil, err
+		}
+	}
+
+	if timestamp.Valid {
+		return &timestamp.Time, nil
+	} else {
+		return nil, nil
+	}
 }
 
 func (r *repository) DeleteCheckInByID(ctx context.Context, id int64) error {

@@ -133,9 +133,24 @@ func (s *service) DeleteCheckInsByUserID(ctx context.Context, userID int64) erro
 
 func (s *service) DeleteOldCheckIns(ctx context.Context) error {
 
+	latestTimestamp, err := s.repo.GetLatestCheckinDate(ctx)
+	if err != nil && !errors.Is(err, app.NotFoundErr) {
+		return err
+	} else if err == nil {
+		now := time.Now()
+		diffDays := now.Sub(*latestTimestamp).Hours() / 24
+		if diffDays < -1 {
+			return fmt.Errorf("%w: too far in past - now (%v) < latest checkin (%v)", app.InternalErr, now,
+				*latestTimestamp)
+		} else if diffDays > 356 {
+			return fmt.Errorf("%w: too far in future - now (%v) > latest checkin (%v)", app.InternalErr, now,
+				*latestTimestamp)
+		}
+	}
+
 	retentionDaysEnv := os.Getenv("CHECKIN_RETENTION_DAYS")
 	if retentionDaysEnv == "" {
-		retentionDaysEnv = "365"
+		retentionDaysEnv = "356"
 	}
 
 	retentionDays, err := strconv.ParseInt(retentionDaysEnv, 10, 64)
