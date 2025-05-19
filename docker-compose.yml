@@ -93,6 +93,16 @@ services:
       - backend
     networks:
       - checkin-system-network
+  watchtower:
+    container_name: watchtower
+    hostname: watchtower
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      WATCHTOWER_POLL_INTERVAL: 60
+      WATCHTOWER_CLEANUP: true
 # volume for db data
 volumes:
   db:
