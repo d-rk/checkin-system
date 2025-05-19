@@ -101,8 +101,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      WATCHTOWER_POLL_INTERVAL: 60
-      WATCHTOWER_CLEANUP: true
+      WATCHTOWER_POLL_INTERVAL: "60"
+      WATCHTOWER_CLEANUP: "true"
 # volume for db data
 volumes:
   db:
