@@ -162,6 +162,24 @@ http://192.168.12.1
 ssh root@192.168.14.1
 ```
 
+## Troubleshooting
+
+### Calibrate Hardware Clock
+
+When the hardware clock is out of sync, connect the pi to the internet and update the time as follows:
+
+```shell
+# check current time
+date
+sudo hwclock -r
+
+# update time via internet
+sudo ntpdate ntp.ubuntu.com
+
+# set time to hardware clock
+sudo hwclock -w
+```
+
 ## development
 
 this chapter discribes steps needed when developing the software.
