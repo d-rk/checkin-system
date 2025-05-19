@@ -286,4 +286,7 @@ TAG=$(git describe --tags --abbrev=0) docker buildx bake --push
 
 # build and push latest
 docker buildx bake --push
+
+# push git tags
+git push --tags
 ```
