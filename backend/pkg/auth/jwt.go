@@ -42,7 +42,7 @@ func FindToken(request *http.Request) (string, error) {
 	if len(bearer) > 7 && strings.ToUpper(bearer[0:6]) == "BEARER" {
 		return bearer[7:], nil
 	}
-	return "", fmt.Errorf("invalid token: " + bearer)
+	return "", fmt.Errorf("invalid token: %s", bearer)
 }
 
 func ValidateToken(tokenString string) (*TokenClaims, error) {

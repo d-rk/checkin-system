@@ -101,17 +101,13 @@ func (r *repository) GetLatestCheckinDate(ctx context.Context) (*time.Time, erro
 	var timestamp sql.NullTime
 
 	if err := r.db.GetContext(ctx, &timestamp, "SELECT max(timestamp) FROM checkins"); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, app.NotFoundErr
-		} else {
-			return nil, err
-		}
+		return nil, err
 	}
 
 	if timestamp.Valid {
 		return &timestamp.Time, nil
 	} else {
-		return nil, nil
+		return nil, app.NotFoundErr
 	}
 }
 

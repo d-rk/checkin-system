@@ -11,6 +11,10 @@ import (
 )
 
 func Connect() *sqlx.DB {
+	return connect(os.Getenv("DB_NAME"))
+}
+
+func connect(dbName string) *sqlx.DB {
 
 	dbDriver := os.Getenv("DB_DRIVER")
 
@@ -20,14 +24,12 @@ func Connect() *sqlx.DB {
 		dbHost := os.Getenv("DB_HOST")
 		dbUser := os.Getenv("DB_USER")
 		dbPassword := os.Getenv("DB_PASSWORD")
-		dbName := os.Getenv("DB_NAME")
 		dbPort := os.Getenv("DB_PORT")
 		dbSslMode := os.Getenv("DB_SSL_MODE")
 
 		dsn = fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=UTC", dbHost, dbUser, dbPassword, dbName, dbPort, dbSslMode)
 
 	} else if dbDriver == "sqlite3" {
-		dbName := os.Getenv("DB_NAME")
 		dsn = fmt.Sprintf("file:%s?_loc=UTC", dbName)
 	}
 

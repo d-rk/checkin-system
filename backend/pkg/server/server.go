@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/d-rk/checkin-system/pkg/api"
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
@@ -109,6 +110,11 @@ func setupRouter(userService user.Service, checkinService checkin.Service, clock
 	})
 
 	router.Get("/websocket", websocket.CreateHandler(ws))
+
+	_ = chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
+		fmt.Printf("[%6s]: %s\n", method, route)
+		return nil
+	})
 
 	return router
 }
