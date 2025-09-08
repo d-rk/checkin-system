@@ -16,6 +16,9 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: './backend/go.mod'
+      - name: Prepare code
+        working-directory: ./backend
+        run: make generate
       - uses: golangci/golangci-lint-action@v8
         with:
           working-directory: ./backend
@@ -52,8 +55,12 @@ jobs:
           echo "DB_PORT=5432" >> .env
           echo "DB_SSL_MODE=disable" >> .env
 
-      - name: Run integration tests
+      - name: Prepare code
         working-directory: ./backend
         run: |
           go install gotest.tools/gotestsum@latest
-          make it
+          make generate
+
+      - name: Run integration tests
+        working-directory: ./backend
+        run: make it

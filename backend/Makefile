@@ -14,8 +14,13 @@ TESTS    := $(shell find . -name '*.go' -type f -not -name '*.pb.go' -not -name 
 
 .DEFAULT_GOAL := all
 .PHONY: all
-all: fmt lint build
+all: generate fmt lint build
 
+.PHONY: generate
+generate:
+	go generate ./...
+
+.PHONY: fmt
 fmt:
 	golangci-lint fmt
 
