@@ -22,11 +22,36 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: checkin-system
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: './backend/go.mod'
+      - name: Create .env file
+        working-directory: ./backend
+        run: |
+          echo "DB_HOST=127.0.0.1" > .env
+          echo "DB_DRIVER=postgres" >> .env
+          echo "DB_USER=postgres" >> .env
+          echo "DB_PASSWORD=postgres" >> .env
+          echo "DB_NAME=checkin-system" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_SSL_MODE=disable" >> .env
+
       - name: Run integration tests
         working-directory: ./backend
         run: make it
