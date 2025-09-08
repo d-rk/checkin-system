@@ -2,7 +2,13 @@ package server
 
 import (
 	"context"
-	"fmt"
+	"log/slog"
+	"net"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/d-rk/checkin-system/pkg/api"
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
@@ -16,14 +22,15 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	netHttpMiddleware "github.com/oapi-codegen/nethttp-middleware"
-	"log"
-	"log/slog"
-	"net"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 )
+
+var Version = "latest"
+var BuildTime string
+var GitCommit string
+
+const defaultMaxAge = 300
+const defaultTimeout = 60 * time.Second
+const defaultReadHeaderTimeout = 10 * time.Second
 
 func NewDB(runMigration bool) *sqlx.DB {
 
@@ -49,7 +56,7 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 	clockService := clock.NewService()
 
 	if err := checkinService.DeleteOldCheckIns(ctx); err != nil {
-		slog.Warn("failed to delete old checkins", "error", err)
+		slog.WarnContext(ctx, "failed to delete old checkins", "error", err)
 	}
 
 	return setupRouter(userService, checkinService, clockService, ws)
@@ -57,21 +64,30 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 
 func Run() {
 
+	slog.Info("starting up", "version", Version, "build_time", BuildTime, "git_commit", GitCommit)
+
 	db := NewDB(true)
 	defer db.Close()
 
 	router := NewRouter(context.Background(), db)
 
 	srv := &http.Server{
-		Handler: router,
-		Addr:    net.JoinHostPort("0.0.0.0", "8080"),
+		Handler:           router,
+		ReadHeaderTimeout: defaultReadHeaderTimeout,
+		Addr:              net.JoinHostPort("0.0.0.0", "8080"),
 	}
 
 	// And we serve HTTP until the world ends.
-	log.Fatal(srv.ListenAndServe())
+	err := srv.ListenAndServe()
+	slog.Info("server stopped", "err", err)
 }
 
-func setupRouter(userService user.Service, checkinService checkin.Service, clockService clock.Service, ws *websocket.Server) chi.Router {
+func setupRouter(
+	userService user.Service,
+	checkinService checkin.Service,
+	clockService clock.Service,
+	ws *websocket.Server,
+) chi.Router {
 
 	router := chi.NewRouter()
 
@@ -92,7 +108,7 @@ func setupRouter(userService user.Service, checkinService checkin.Service, clock
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-	router.Use(middleware.Timeout(60 * time.Second))
+	router.Use(middleware.Timeout(defaultTimeout))
 
 	router.Use(coreMiddleware())
 
@@ -105,14 +121,17 @@ func setupRouter(userService user.Service, checkinService checkin.Service, clock
 
 	// register handler on router
 	api.HandlerWithOptions(apiHandler, api.ChiServerOptions{
-		BaseRouter:  router,
-		Middlewares: []api.MiddlewareFunc{netHttpMiddleware.OapiRequestValidatorWithOptions(swagger, &validatorOptions), api.AuthMiddleware()},
+		BaseRouter: router,
+		Middlewares: []api.MiddlewareFunc{
+			netHttpMiddleware.OapiRequestValidatorWithOptions(swagger, &validatorOptions),
+			api.AuthMiddleware(),
+		},
 	})
 
 	router.Get("/websocket", websocket.CreateHandler(ws))
 
-	_ = chi.Walk(router, func(method string, route string, handler http.Handler, middlewares ...func(http.Handler) http.Handler) error {
-		fmt.Printf("[%6s]: %s\n", method, route)
+	_ = chi.Walk(router, func(method string, route string, _ http.Handler, _ ...func(http.Handler) http.Handler) error {
+		slog.Info("registered route", "method", method, "route", route)
 		return nil
 	})
 
@@ -126,6 +145,6 @@ func coreMiddleware() func(http.Handler) http.Handler {
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type"},
 		ExposedHeaders:   []string{"X-Filename"},
 		AllowCredentials: false,
-		MaxAge:           300,
+		MaxAge:           defaultMaxAge,
 	})
 }

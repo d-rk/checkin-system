@@ -3,11 +3,11 @@ package database
 import (
 	"context"
 	"database/sql"
+
 	"github.com/jmoiron/sqlx"
 )
 
-// Tx is an interface that models the standard transaction in
-// `database/sql`.
+// Tx is an interface that models the standard transaction in `database/sql`.
 //
 // To ensure `TransactionalFunc` funcs cannot commit or rollback a transaction (which is
 // handled by `WithTransaction`), those methods are not included here.
@@ -25,21 +25,21 @@ type Tx interface {
 type TransactionalFunc func(Tx) error
 
 // WithTransaction creates a new transaction and handles rollback/commit based on the
-// error object returned by the `TransactionalFunc`
+// error object returned by the `TransactionalFunc`.
 func WithTransaction(db *sqlx.DB, fn TransactionalFunc) (err error) {
 	tx, err := db.Beginx()
 	if err != nil {
-		return
+		return err
 	}
 
 	defer func() {
 		if p := recover(); p != nil {
 			// a panic occurred, rollback and repanic
-			tx.Rollback()
+			_ = tx.Rollback()
 			panic(p)
 		} else if err != nil {
 			// something went wrong, rollback
-			tx.Rollback()
+			_ = tx.Rollback()
 		} else {
 			// all good, commit
 			err = tx.Commit()

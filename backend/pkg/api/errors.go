@@ -13,11 +13,11 @@ type Error interface {
 }
 
 var (
-	InvalidCredentialsErr = &sentinelAPIError{status: http.StatusUnauthorized, msg: "invalid credentials"}
-	InvalidTokenErr       = &sentinelAPIError{status: http.StatusUnauthorized, msg: "invalid token"}
-	NotFoundErr           = &sentinelAPIError{status: http.StatusNotFound, msg: "not found"}
-	BadRequestErr         = &sentinelAPIError{status: http.StatusBadRequest, msg: "bad request"}
-	ConflictErr           = &sentinelAPIError{status: http.StatusConflict, msg: "conflict"}
+	ErrInvalidCredentials = &sentinelAPIError{status: http.StatusUnauthorized, msg: "invalid credentials"}
+	ErrInvalidToken       = &sentinelAPIError{status: http.StatusUnauthorized, msg: "invalid token"}
+	ErrNotFound           = &sentinelAPIError{status: http.StatusNotFound, msg: "not found"}
+	ErrBadRequest         = &sentinelAPIError{status: http.StatusBadRequest, msg: "bad request"}
+	ErrConflict           = &sentinelAPIError{status: http.StatusConflict, msg: "conflict"}
 )
 
 type sentinelAPIError struct {
@@ -39,6 +39,7 @@ func (e sentinelAPIError) Wrap(err error) error {
 
 type sentinelWrappedError struct {
 	error
+
 	sentinel *sentinelAPIError
 }
 

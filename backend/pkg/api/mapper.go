@@ -1,12 +1,13 @@
 package api
 
 import (
+	"time"
+
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/user"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"gopkg.in/guregu/null.v4"
-	"time"
 )
 
 func toAPIUser(u *user.User) *User {
@@ -74,7 +75,7 @@ func toAPICheckIns(checkIns []checkin.CheckIn) []CheckIn {
 	return result
 }
 
-func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckInWithUser {
+func toAPICheckInWithUser(c *checkin.WithUser) *CheckInWithUser {
 	return &CheckInWithUser{
 		Id:        c.ID,
 		Date:      openapi_types.Date{Time: c.Date},
@@ -91,7 +92,7 @@ func toAPICheckInWithUser(c *checkin.CheckInWithUser) *CheckInWithUser {
 	}
 }
 
-func toAPICheckInsWithUser(checkins []checkin.CheckInWithUser) []CheckInWithUser {
+func toAPICheckInsWithUser(checkins []checkin.WithUser) []CheckInWithUser {
 
 	result := make([]CheckInWithUser, len(checkins))
 
@@ -103,7 +104,7 @@ func toAPICheckInsWithUser(checkins []checkin.CheckInWithUser) []CheckInWithUser
 	return result
 }
 
-func toAPICheckInsDates(dates []checkin.CheckInDate) []CheckInDate {
+func toAPICheckInsDates(dates []checkin.Date) []CheckInDate {
 
 	result := make([]CheckInDate, len(dates))
 

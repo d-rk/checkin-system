@@ -1,11 +1,12 @@
 package api
 
 import (
-	"github.com/d-rk/checkin-system/pkg/server"
 	"net/http"
+
+	"github.com/d-rk/checkin-system/pkg/server"
 )
 
-// Handler is the entrypoint for the vercel serverless function
+// Handler is the entrypoint for the vercel serverless function.
 func Handler(w http.ResponseWriter, r *http.Request) {
 	db := server.NewDB(false)
 	defer db.Close()

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/d-rk/checkin-system/pkg/app"
@@ -15,7 +15,7 @@ import (
 type Service interface {
 	ListUsers(ctx context.Context) ([]User, error)
 	GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error)
-	GetUserByRfidUid(ctx context.Context, rfidUid string, excludeID int64) (*User, error)
+	GetUserByRfidUID(ctx context.Context, rfidUID string, excludeID int64) (*User, error)
 	GetUserByID(ctx context.Context, id int64) (*User, error)
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	UpdateUser(ctx context.Context, user *User) (*User, error)
@@ -50,8 +50,8 @@ func (s *service) GetUserByID(ctx context.Context, id int64) (*User, error) {
 	return s.repo.GetUserByID(ctx, id)
 }
 
-func (s *service) GetUserByRfidUid(ctx context.Context, rfidUid string, excludeID int64) (*User, error) {
-	return s.repo.GetUserByRfidUid(ctx, rfidUid, excludeID)
+func (s *service) GetUserByRfidUID(ctx context.Context, rfidUID string, excludeID int64) (*User, error) {
+	return s.repo.GetUserByRfidUID(ctx, rfidUID, excludeID)
 }
 
 func (s *service) GetUserByNameAndPassword(ctx context.Context, name, password string) (*User, error) {
@@ -61,31 +61,31 @@ func (s *service) GetUserByNameAndPassword(ctx context.Context, name, password s
 		return nil, err
 	}
 
-	if s.passwordEquals(user, password) {
-		return user, nil
-	} else {
-		return nil, app.NotFoundErr
+	if !s.passwordEquals(user, password) {
+		return nil, app.ErrNotFound
 	}
+
+	return user, nil
 }
 
 func (s *service) UpdateUser(ctx context.Context, user *User) (*User, error) {
 
 	_, err := s.repo.GetUserByID(ctx, user.ID)
 	if err != nil {
-		return nil, app.NotFoundErr
+		return nil, app.ErrNotFound
 	}
 
 	_, err = s.repo.GetUserByName(ctx, user.Name, user.ID)
 
 	if err == nil {
-		return nil, fmt.Errorf("user with name already exists: %w", app.ConflictErr)
+		return nil, fmt.Errorf("user with name already exists: %w", app.ErrConflict)
 	}
 
 	if user.RFIDuid.Ptr() != nil {
-		_, err = s.repo.GetUserByRfidUid(ctx, user.RFIDuid.ValueOrZero(), user.ID)
+		_, err = s.repo.GetUserByRfidUID(ctx, user.RFIDuid.ValueOrZero(), user.ID)
 
 		if err == nil {
-			return nil, fmt.Errorf("user with rfid_uid already exists: %w", app.ConflictErr)
+			return nil, fmt.Errorf("user with rfid_uid already exists: %w", app.ErrConflict)
 		}
 	}
 
@@ -105,14 +105,14 @@ func (s *service) CreateUser(ctx context.Context, user *User) (*User, error) {
 	_, err := s.repo.GetUserByName(ctx, user.Name, -1)
 
 	if err == nil {
-		return nil, fmt.Errorf("user already exists: %w", app.ConflictErr)
+		return nil, fmt.Errorf("user already exists: %w", app.ErrConflict)
 	}
 
 	if user.RFIDuid.Ptr() != nil {
-		_, err = s.repo.GetUserByRfidUid(ctx, user.RFIDuid.ValueOrZero(), -1)
+		_, err = s.repo.GetUserByRfidUID(ctx, user.RFIDuid.ValueOrZero(), -1)
 
 		if err == nil {
-			return nil, fmt.Errorf("user with rfid_uid already exists: %w", app.ConflictErr)
+			return nil, fmt.Errorf("user with rfid_uid already exists: %w", app.ErrConflict)
 		}
 	}
 
@@ -122,7 +122,7 @@ func (s *service) CreateUser(ctx context.Context, user *User) (*User, error) {
 func (s *service) UpdateUserPassword(ctx context.Context, id int64, password string) error {
 
 	if password == "" {
-		return fmt.Errorf("empty password provided: %w", app.ConflictErr)
+		return fmt.Errorf("empty password provided: %w", app.ErrConflict)
 	}
 
 	user, err := s.repo.GetUserByID(context.Background(), id)
@@ -144,8 +144,8 @@ func (s *service) updateAdminPassword(ctx context.Context, password string) erro
 	}
 
 	admin, err := s.repo.GetUserByName(ctx, "admin", -1)
-	if err != nil && errors.Is(err, app.NotFoundErr) {
-		log.Printf("not updating admin password. user not found")
+	if err != nil && errors.Is(err, app.ErrNotFound) {
+		slog.InfoContext(ctx, "not updating admin password. user not found")
 		return nil
 	} else if err != nil {
 		return err

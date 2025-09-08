@@ -1,21 +1,24 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type TokenClaims struct {
-	UserID int64 `json:"userId"`
 	jwt.RegisteredClaims
+
+	UserID int64 `json:"userId"`
 }
 
-func GenerateToken(userId int64) (string, error) {
+func GenerateToken(userID int64) (string, error) {
 
 	now := time.Now()
 	tokenExpiryMinutes, err := strconv.Atoi(os.Getenv("TOKEN_EXPIRY_MINUTES"))
@@ -25,7 +28,7 @@ func GenerateToken(userId int64) (string, error) {
 	}
 
 	claims := TokenClaims{
-		UserID: userId,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(now),
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * time.Duration(tokenExpiryMinutes))),
@@ -60,13 +63,13 @@ func ValidateToken(tokenString string) (*TokenClaims, error) {
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("token invalid")
+		return nil, errors.New("token invalid")
 	}
 
 	claims, ok := token.Claims.(*TokenClaims)
 
 	if !ok {
-		return nil, fmt.Errorf("token valid but couldn't parse claims")
+		return nil, errors.New("token valid but couldn't parse claims")
 	}
 
 	return claims, nil

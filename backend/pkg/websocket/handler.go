@@ -8,21 +8,23 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const defaultBufferSize = 1024
+
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  defaultBufferSize,
+	WriteBufferSize: defaultBufferSize,
 }
 
 func CreateHandler(server *Server) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// trust all origin to avoid CORS
-		upgrader.CheckOrigin = func(r *http.Request) bool {
+		upgrader.CheckOrigin = func(_ *http.Request) bool {
 			return true
 		}
 
 		// upgrades connection to websocket
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
+		conn, upgradeErr := upgrader.Upgrade(w, r, nil)
+		if upgradeErr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -38,7 +40,7 @@ func CreateHandler(server *Server) http.HandlerFunc {
 
 		// greet the new client
 		greeting := fmt.Sprintf("Server: Welcome! Your ID is %s", client.ID)
-		server.PublishClient(&client, Message{Message: greeting, Data: client.ID})
+		_ = server.PublishClient(&client, Message{Message: greeting, Data: client.ID})
 
 		// message handling
 		for {

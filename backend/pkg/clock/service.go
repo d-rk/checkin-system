@@ -17,12 +17,12 @@ func NewService() Service {
 	return &service{}
 }
 
-func (s *service) GetClock(ctx context.Context) (Clock, error) {
+func (s *service) GetClock(_ context.Context) (Clock, error) {
 	return Clock{
 		Timestamp: time.Now(),
 	}, nil
 }
 
-func (s *service) SetClock(ctx context.Context) error {
+func (s *service) SetClock(_ context.Context) error {
 	return nil
 }

@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
 
 	"github.com/gorilla/websocket"
 )
@@ -11,7 +11,7 @@ type Server struct {
 	Clients []Client
 }
 
-// Client each client consists of auto-generated ID & connection
+// Client each client consists of auto-generated ID & connection.
 type Client struct {
 	ID         string
 	Connection *websocket.Conn
@@ -24,7 +24,7 @@ type Message struct {
 }
 
 func (s *Server) send(client *Client, message []byte) {
-	client.Connection.WriteMessage(1, message)
+	_ = client.Connection.WriteMessage(1, message)
 }
 
 func (s *Server) RemoveClient(client Client) {
@@ -44,10 +44,10 @@ func (s *Server) RemoveClient(client Client) {
 	}
 }
 
-func (s *Server) ProcessMessage(client Client, messageType int, payload []byte) {
+func (s *Server) ProcessMessage(client Client, _ int, payload []byte) {
 
-	log.Printf("received message %s", payload)
-	s.PublishClient(&client, Message{Message: "cannot handle client message", Data: payload})
+	slog.Debug("received message", "payload", payload)
+	_ = s.PublishClient(&client, Message{Message: "cannot handle client message", Data: payload})
 }
 
 func (s *Server) Publish(message any) error {

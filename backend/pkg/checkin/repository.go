@@ -5,24 +5,25 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/database"
-	"time"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type Repository interface {
 	ListCheckIns(ctx context.Context) ([]CheckIn, error)
-	ListCheckInsPerDay(ctx context.Context, date time.Time) ([]CheckInWithUser, error)
-	ListAllCheckIns(ctx context.Context) ([]CheckInWithUser, error)
+	ListCheckInsPerDay(ctx context.Context, date time.Time) ([]WithUser, error)
+	ListAllCheckIns(ctx context.Context) ([]WithUser, error)
 	ListUserCheckIns(ctx context.Context, userID int64) ([]CheckIn, error)
 	GetLatestCheckinDate(ctx context.Context) (*time.Time, error)
 	DeleteCheckInByID(ctx context.Context, id int64) error
 	DeleteCheckInsByUserID(ctx context.Context, userID int64) error
 	DeleteCheckInsOlderThan(ctx context.Context, thresholdDays int64) error
 	SaveCheckIn(ctx context.Context, checkIn *CheckIn) (*CheckIn, error)
-	ListCheckInDates(ctx context.Context) ([]CheckInDate, error)
+	ListCheckInDates(ctx context.Context) ([]Date, error)
 }
 
 type repository struct {
@@ -44,9 +45,9 @@ func (r *repository) ListCheckIns(ctx context.Context) ([]CheckIn, error) {
 	return checkIns, nil
 }
 
-func (r *repository) ListCheckInsPerDay(ctx context.Context, date time.Time) ([]CheckInWithUser, error) {
+func (r *repository) ListCheckInsPerDay(ctx context.Context, date time.Time) ([]WithUser, error) {
 
-	var checkIns []CheckInWithUser
+	var checkIns []WithUser
 
 	if err := r.db.SelectContext(ctx, &checkIns, `SELECT
 			checkins.*,
@@ -65,9 +66,9 @@ func (r *repository) ListCheckInsPerDay(ctx context.Context, date time.Time) ([]
 	return checkIns, nil
 }
 
-func (r *repository) ListAllCheckIns(ctx context.Context) ([]CheckInWithUser, error) {
+func (r *repository) ListAllCheckIns(ctx context.Context) ([]WithUser, error) {
 
-	var checkIns []CheckInWithUser
+	var checkIns []WithUser
 
 	if err := r.db.SelectContext(ctx, &checkIns, `SELECT
 			checkins.*,
@@ -104,46 +105,46 @@ func (r *repository) GetLatestCheckinDate(ctx context.Context) (*time.Time, erro
 		return nil, err
 	}
 
-	if timestamp.Valid {
-		return &timestamp.Time, nil
-	} else {
-		return nil, app.NotFoundErr
+	if !timestamp.Valid {
+		return nil, app.ErrNotFound
 	}
+
+	return &timestamp.Time, nil
 }
 
 func (r *repository) DeleteCheckInByID(ctx context.Context, id int64) error {
 
-	return database.WithTransaction(r.db, func(tx database.Tx) error {
+	return database.WithTransaction(r.db, func(_ database.Tx) error {
 
 		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, `DELETE FROM checkins WHERE id = $1`)
-
 		if err != nil {
 			return err
 		}
+		defer deleteCheckinsStatement.Close()
 
-		_, err = deleteCheckinsStatement.Exec(id)
+		_, err = deleteCheckinsStatement.ExecContext(ctx, id)
 		return err
 	})
 }
 
 func (r *repository) DeleteCheckInsByUserID(ctx context.Context, userID int64) error {
 
-	return database.WithTransaction(r.db, func(tx database.Tx) error {
+	return database.WithTransaction(r.db, func(_ database.Tx) error {
 
 		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, `DELETE FROM checkins WHERE user_id = $1`)
-
 		if err != nil {
 			return err
 		}
+		defer deleteCheckinsStatement.Close()
 
-		_, err = deleteCheckinsStatement.Exec(userID)
+		_, err = deleteCheckinsStatement.ExecContext(ctx, userID)
 		return err
 	})
 }
 
 func (r *repository) DeleteCheckInsOlderThan(ctx context.Context, thresholdDays int64) error {
 
-	return database.WithTransaction(r.db, func(tx database.Tx) error {
+	return database.WithTransaction(r.db, func(_ database.Tx) error {
 
 		var query string
 
@@ -157,12 +158,12 @@ func (r *repository) DeleteCheckInsOlderThan(ctx context.Context, thresholdDays 
 		}
 
 		deleteCheckinsStatement, err := r.db.PreparexContext(ctx, query)
-
 		if err != nil {
 			return err
 		}
+		defer deleteCheckinsStatement.Close()
 
-		_, err = deleteCheckinsStatement.Exec(thresholdDays)
+		_, err = deleteCheckinsStatement.ExecContext(ctx, thresholdDays)
 		return err
 	})
 }
@@ -172,10 +173,10 @@ func (r *repository) SaveCheckIn(ctx context.Context, checkIn *CheckIn) (*CheckI
 	insertStatement, err := r.db.PrepareNamedContext(ctx, `INSERT INTO checkins
 		(date, timestamp, user_id) VALUES
 		(:date, :timestamp, :user_id) RETURNING id`)
-
 	if err != nil {
 		return nil, err
 	}
+	defer insertStatement.Close()
 
 	row := insertStatement.QueryRow(checkIn)
 
@@ -183,16 +184,16 @@ func (r *repository) SaveCheckIn(ctx context.Context, checkIn *CheckIn) (*CheckI
 		return nil, row.Err()
 	}
 
-	if err := row.Scan(&checkIn.ID); err != nil {
+	if err = row.Scan(&checkIn.ID); err != nil {
 		return nil, err
 	}
 
 	return checkIn, nil
 }
 
-func (r *repository) ListCheckInDates(ctx context.Context) ([]CheckInDate, error) {
+func (r *repository) ListCheckInDates(ctx context.Context) ([]Date, error) {
 
-	var dates []CheckInDate
+	var dates []Date
 
 	if err := r.db.SelectContext(ctx, &dates, "SELECT distinct date as date FROM checkins"); err != nil {
 		return nil, errors.New("no checkIn dates found")

@@ -1,0 +1,32 @@
+name: Lint / Test / IT
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: './backend/go.mod'
+      - name: Run Lint
+        working-directory: ./backend
+        run: make lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: './backend/go.mod'
+      - name: Run integration tests
+        working-directory: ./backend
+        run: make it

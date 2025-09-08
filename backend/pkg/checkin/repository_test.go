@@ -4,10 +4,11 @@ package checkin
 
 import (
 	"context"
+	"testing"
+
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/database"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestGetLatestCheckinDate_EmptyTable_ReturnsNotFoundErr(t *testing.T) {
@@ -19,5 +20,5 @@ func TestGetLatestCheckinDate_EmptyTable_ReturnsNotFoundErr(t *testing.T) {
 	ctx := context.Background()
 	ts, err := repo.GetLatestCheckinDate(ctx)
 	assert.Nil(t, ts)
-	assert.Equal(t, app.NotFoundErr, err)
+	assert.Equal(t, app.ErrNotFound, err)
 }

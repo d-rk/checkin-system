@@ -5,11 +5,12 @@ package database
 import (
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/joho/godotenv"
 
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"

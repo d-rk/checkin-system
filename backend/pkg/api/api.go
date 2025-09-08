@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/auth"
 	"github.com/d-rk/checkin-system/pkg/checkin"
@@ -11,9 +14,10 @@ import (
 	"github.com/d-rk/checkin-system/pkg/user"
 	"github.com/flytam/filenamify"
 	"github.com/gocarina/gocsv"
-	"net/http"
-	"time"
 )
+
+const contentTypeJSON = "application/json"
+const contentTypeCSV = "application/csv"
 
 type apiHandler struct {
 	userService    user.Service
@@ -34,13 +38,13 @@ func (h *apiHandler) Login(w http.ResponseWriter, r *http.Request) {
 	credentials := &LoginCredentials{}
 
 	if err := json.NewDecoder(r.Body).Decode(&credentials); err != nil {
-		handlerError(w, r, BadRequestErr.Wrap(err))
+		handlerError(w, r, ErrBadRequest.Wrap(err))
 		return
 	}
 
 	u, err := h.userService.GetUserByNameAndPassword(r.Context(), credentials.Username, credentials.Password)
-	if err != nil && errors.Is(err, app.NotFoundErr) {
-		handlerError(w, r, InvalidCredentialsErr.Wrap(err))
+	if err != nil && errors.Is(err, app.ErrNotFound) {
+		handlerError(w, r, ErrInvalidCredentials.Wrap(err))
 		return
 	} else if err != nil {
 		handlerError(w, r, err)
@@ -71,19 +75,18 @@ func (h *apiHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	apiUser := &NewUser{}
 
 	if err := json.NewDecoder(r.Body).Decode(&apiUser); err != nil {
-		handlerError(w, r, BadRequestErr.Wrap(err))
+		handlerError(w, r, ErrBadRequest.Wrap(err))
 		return
 	}
 
 	u, err := h.userService.CreateUser(r.Context(), fromAPINewUser(apiUser))
 	if err != nil {
-		if errors.Is(err, app.ConflictErr) {
-			handlerError(w, r, ConflictErr.Wrap(err))
-			return
-		} else {
-			handlerError(w, r, err)
+		if errors.Is(err, app.ErrConflict) {
+			handlerError(w, r, ErrConflict.Wrap(err))
 			return
 		}
+		handlerError(w, r, err)
+		return
 	}
 
 	writeJSON(w, r, http.StatusCreated, toAPIUser(u))
@@ -91,19 +94,19 @@ func (h *apiHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func (h *apiHandler) GetAuthenticatedUser(w http.ResponseWriter, r *http.Request) {
 
-	userID, ok := r.Context().Value(AuthenticatedUserID).(int64)
+	userID, ok := r.Context().Value(authenticatedUserID).(int64)
 	if !ok {
-		handlerError(w, r, fmt.Errorf("authenticated user not found on context"))
+		handlerError(w, r, errors.New("authenticated user not found on context"))
 		return
 	}
 
 	h.GetUser(w, r, userID)
 }
 
-func (h *apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
-	u, err := h.userService.GetUserByID(r.Context(), userId)
-	if err != nil && errors.Is(err, app.NotFoundErr) {
-		handlerError(w, r, NotFoundErr.Wrap(err))
+func (h *apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
+	u, err := h.userService.GetUserByID(r.Context(), userID)
+	if err != nil && errors.Is(err, app.ErrNotFound) {
+		handlerError(w, r, ErrNotFound.Wrap(err))
 		return
 	} else if err != nil {
 		handlerError(w, r, err)
@@ -113,28 +116,29 @@ func (h *apiHandler) GetUser(w http.ResponseWriter, r *http.Request, userId User
 	writeJSON(w, r, http.StatusOK, toAPIUser(u))
 }
 
-func (h *apiHandler) UpdateUser(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) UpdateUser(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
 
 	apiUser := &User{}
 
 	if err := json.NewDecoder(r.Body).Decode(&apiUser); err != nil {
-		handlerError(w, r, BadRequestErr.Wrap(err))
+		handlerError(w, r, ErrBadRequest.Wrap(err))
 		return
 	}
 
-	if userId != apiUser.Id {
-		handlerError(w, r, BadRequestErr.Wrap(fmt.Errorf("id missmatch: %d != %d", userId, apiUser.Id)))
+	if userID != apiUser.Id {
+		handlerError(w, r, ErrBadRequest.Wrap(fmt.Errorf("id missmatch: %d != %d", userID, apiUser.Id)))
 		return
 	}
 
 	u, err := h.userService.UpdateUser(r.Context(), fromAPIUser(apiUser))
-	if err != nil && errors.Is(err, app.NotFoundErr) {
-		handlerError(w, r, NotFoundErr.Wrap(err))
-		return
-	} else if err != nil && errors.Is(err, app.ConflictErr) {
-		handlerError(w, r, ConflictErr.Wrap(err))
-		return
-	} else if err != nil {
+	if err != nil {
+		if errors.Is(err, app.ErrNotFound) {
+			handlerError(w, r, ErrNotFound.Wrap(err))
+			return
+		} else if errors.Is(err, app.ErrConflict) {
+			handlerError(w, r, ErrConflict.Wrap(err))
+			return
+		}
 		handlerError(w, r, err)
 		return
 	}
@@ -152,20 +156,20 @@ func (h *apiHandler) DeleteAllUsers(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
 
-	authenticatedUserID, ok := r.Context().Value(AuthenticatedUserID).(int64)
+	authenticatedUserID, ok := r.Context().Value(authenticatedUserID).(int64)
 	if !ok {
-		handlerError(w, r, fmt.Errorf("authenticated user not found on context"))
+		handlerError(w, r, errors.New("authenticated user not found on context"))
 		return
 	}
 
-	if authenticatedUserID == userId {
-		handlerError(w, r, ConflictErr.Wrap(fmt.Errorf("cannot delete yourself")))
+	if authenticatedUserID == userID {
+		handlerError(w, r, ErrConflict.Wrap(errors.New("cannot delete yourself")))
 		return
 	}
 
-	if err := h.userService.DeleteUser(r.Context(), userId); err != nil {
+	if err := h.userService.DeleteUser(r.Context(), userID); err != nil {
 		handlerError(w, r, err)
 		return
 	}
@@ -173,16 +177,16 @@ func (h *apiHandler) DeleteUser(w http.ResponseWriter, r *http.Request, userId U
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) UpdateUserPassword(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) UpdateUserPassword(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
 
 	password := &Password{}
 
 	if err := json.NewDecoder(r.Body).Decode(&password); err != nil {
-		handlerError(w, r, BadRequestErr.Wrap(err))
+		handlerError(w, r, ErrBadRequest.Wrap(err))
 		return
 	}
 
-	if err := h.userService.UpdateUserPassword(r.Context(), userId, password.Password); err != nil {
+	if err := h.userService.UpdateUserPassword(r.Context(), userID, password.Password); err != nil {
 		handlerError(w, r, err)
 		return
 	}
@@ -200,17 +204,21 @@ func (h *apiHandler) ListCheckIns(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, toAPICheckIns(checkins))
 }
 
-func (h *apiHandler) CreateCheckIn(w http.ResponseWriter, r *http.Request, userId UserIdPathParam, params CreateCheckInParams) {
+func (h *apiHandler) CreateCheckIn(
+	w http.ResponseWriter,
+	r *http.Request,
+	userID UserIdPathParam,
+	params CreateCheckInParams,
+) {
 
-	c, err := h.checkinService.CreateCheckInForUser(r.Context(), userId, params.Timestamp)
+	c, err := h.checkinService.CreateCheckInForUser(r.Context(), userID, params.Timestamp)
 	if err != nil {
-		if errors.Is(err, app.ConflictErr) {
-			handlerError(w, r, ConflictErr.Wrap(err))
-			return
-		} else {
-			handlerError(w, r, err)
+		if errors.Is(err, app.ErrConflict) {
+			handlerError(w, r, ErrConflict.Wrap(err))
 			return
 		}
+		handlerError(w, r, err)
+		return
 	}
 
 	writeJSON(w, r, http.StatusCreated, toAPICheckIn(c))
@@ -220,16 +228,15 @@ func (h *apiHandler) CreateRfidCheckIn(w http.ResponseWriter, r *http.Request, p
 
 	c, err := h.checkinService.CreateCheckInForRFID(r.Context(), params.Rfid, params.Timestamp)
 	if err != nil {
-		if errors.Is(err, app.ConflictErr) {
-			handlerError(w, r, ConflictErr.Wrap(err))
+		if errors.Is(err, app.ErrConflict) {
+			handlerError(w, r, ErrConflict.Wrap(err))
 			return
-		} else if errors.Is(err, app.NotFoundErr) {
-			handlerError(w, r, NotFoundErr.Wrap(err))
-			return
-		} else {
-			handlerError(w, r, err)
+		} else if errors.Is(err, app.ErrNotFound) {
+			handlerError(w, r, ErrNotFound.Wrap(err))
 			return
 		}
+		handlerError(w, r, err)
+		return
 	}
 
 	writeJSON(w, r, http.StatusCreated, toAPICheckIn(c))
@@ -243,9 +250,9 @@ func (h *apiHandler) ListAllCheckIns(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch r.Header.Get("Accept") {
-	case "application/csv":
+	case contentTypeCSV:
 		writeCSV(w, r, fmt.Sprintf("%s_all_checkins.csv", time.Now().Format("2006-01-02")), checkIns)
-	case "application/json":
+	case contentTypeJSON:
 		fallthrough
 	default:
 		writeJSON(w, r, http.StatusOK, toAPICheckInsWithUser(checkIns))
@@ -271,18 +278,18 @@ func (h *apiHandler) ListCheckInsPerDay(w http.ResponseWriter, r *http.Request, 
 	}
 
 	switch r.Header.Get("Accept") {
-	case "application/csv":
+	case contentTypeCSV:
 		writeCSV(w, r, fmt.Sprintf("%s.csv", params.Day.String()), checkIns)
-	case "application/json":
+	case contentTypeJSON:
 		fallthrough
 	default:
 		writeJSON(w, r, http.StatusOK, toAPICheckInsWithUser(checkIns))
 	}
 }
 
-func (h *apiHandler) DeleteCheckIn(w http.ResponseWriter, r *http.Request, checkinId CheckInIdPathParam) {
+func (h *apiHandler) DeleteCheckIn(w http.ResponseWriter, r *http.Request, checkinID CheckInIdPathParam) {
 
-	if err := h.checkinService.DeleteCheckInByID(r.Context(), checkinId); err != nil {
+	if err := h.checkinService.DeleteCheckInByID(r.Context(), checkinID); err != nil {
 		handlerError(w, r, err)
 		return
 	}
@@ -290,9 +297,9 @@ func (h *apiHandler) DeleteCheckIn(w http.ResponseWriter, r *http.Request, check
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) DeleteUserCheckIns(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) DeleteUserCheckIns(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
 
-	if err := h.checkinService.DeleteCheckInsByUserID(r.Context(), userId); err != nil {
+	if err := h.checkinService.DeleteCheckInsByUserID(r.Context(), userID); err != nil {
 		handlerError(w, r, err)
 		return
 	}
@@ -300,24 +307,24 @@ func (h *apiHandler) DeleteUserCheckIns(w http.ResponseWriter, r *http.Request, 
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) GetUserCheckIns(w http.ResponseWriter, r *http.Request, userId UserIdPathParam) {
+func (h *apiHandler) GetUserCheckIns(w http.ResponseWriter, r *http.Request, userID UserIdPathParam) {
 
-	u, err := h.userService.GetUserByID(r.Context(), userId)
+	u, err := h.userService.GetUserByID(r.Context(), userID)
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
 
-	checkIns, err := h.checkinService.ListUserCheckIns(r.Context(), userId)
+	checkIns, err := h.checkinService.ListUserCheckIns(r.Context(), userID)
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
 
 	switch r.Header.Get("Accept") {
-	case "application/csv":
+	case contentTypeCSV:
 		writeCSV(w, r, fmt.Sprintf("%s.csv", u.Name), checkIns)
-	case "application/json":
+	case contentTypeJSON:
 		fallthrough
 	default:
 		writeJSON(w, r, http.StatusOK, toAPICheckIns(checkIns))
@@ -345,7 +352,7 @@ func (h *apiHandler) GetClock(w http.ResponseWriter, r *http.Request, params Get
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", contentTypeJSON)
 	w.WriteHeader(status)
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -364,7 +371,7 @@ func writeCSV(w http.ResponseWriter, r *http.Request, filename string, response 
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/csv")
+	w.Header().Set("Content-Type", contentTypeCSV)
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, saneFilename))
 	w.Header().Set("X-Filename", saneFilename)
 	w.WriteHeader(http.StatusOK)
