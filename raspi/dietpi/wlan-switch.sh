@@ -5,18 +5,50 @@ set -e
 
 wlan_config=/etc/network/interfaces.d/wlan0
 
-MODE=client
-NEW_MODE=hotspot
+function switch_to_client_mode() {
+  echo ""
+  echo "Configure wlan0 interface as client..."
+  cat > "$wlan_config" <<- EOM
+auto wlan0
+allow-hotplug wlan0
+iface wlan0 inet dhcp
+wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
+EOM
+  cat "$wlan_config"
 
-if grep -q 192.168.14.1 "$wlan_config"; then
-  MODE=hotspot
-  NEW_MODE=client
-fi
+  echo ""
+  echo "Disable dhcp server for wlan interfaces..."
+  cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server.bak
+  sed -i -E 's/^#?(INTERFACESv4)=.*/\1="usb0"/' "/etc/default/isc-dhcp-server"
+  diff --color "/etc/default/isc-dhcp-server.bak" "/etc/default/isc-dhcp-server" || true
 
-echo "current mode: $MODE"
+  systemctl restart isc-dhcp-server
 
-if [[ "client" == "${MODE}" ]]; then
+  echo ""
+  echo "Try to bring up interface:"
+  ifdown wlan0 || true
+  ifup wlan0 || true
 
+  echo ""
+  echo "Available networks:"
+  wpa_cli list_networks
+
+  read -p "Add an additional network? [y/n] " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+      if [[ -z "${WIFI_SSID}" ]]; then
+        read -r -e -p "Enter WIFI SSID: " WIFI_SSID
+      fi
+
+      if [[ -z "${WIFI_PASSWORD}" ]]; then
+        read -r -e -p "Enter WIFI Password: " WIFI_PASSWORD
+      fi
+
+      wpa_passphrase "${WIFI_SSID}" "${WIFI_PASSWORD}" >> /etc/wpa_supplicant/wpa_supplicant.conf
+      cat /etc/wpa_supplicant/wpa_supplicant.conf
+  fi
+}
+
+function switch_to_hotspot_mode() {
   echo ""
   echo "Configure wlan0 interface as hotspot..."
   cat > "$wlan_config" <<- EOM
@@ -45,50 +77,25 @@ EOM
   echo ""
   echo "Restart hostapd:"
   systemctl restart hostapd
+}
 
-  exit 0
+function get_current_mode() {
+  if grep -q 192.168.14.1 "$wlan_config"; then
+    echo hotspot
+  else
+    echo client
+  fi
+}
+
+MODE=$(get_current_mode)
+
+echo "current mode: $MODE"
+if [[ "${MODE}" == "client" ]]; then
+  switch_to_hotspot_mode
+else
+  switch_to_client_mode
 fi
 
+MODE=$(get_current_mode)
 echo ""
-echo "Configure wlan0 interface as client..."
-cat > "$wlan_config" <<- EOM
-auto wlan0
-allow-hotplug wlan0
-iface wlan0 inet dhcp
-wpa-conf /etc/wpa_supplicant/wpa_supplicant.conf
-EOM
-cat "$wlan_config"
-
-echo ""
-echo "Disable dhcp server for wlan interfaces..."
-cp /etc/default/isc-dhcp-server /etc/default/isc-dhcp-server.bak
-sed -i -E 's/^#?(INTERFACESv4)=.*/\1="usb0"/' "/etc/default/isc-dhcp-server"
-diff --color "/etc/default/isc-dhcp-server.bak" "/etc/default/isc-dhcp-server" || true
-
-systemctl restart isc-dhcp-server
-
-echo ""
-echo "Try to bring up interface:"
-ifdown wlan0 || true
-ifup wlan0 || true
-
-echo ""
-echo "Available networks:"
-wpa_cli list_networks
-
-read -p "Add an additional network? [y/n] " -n 1 -r
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if [[ -z "${WIFI_SSID}" ]]; then
-      read -r -e -p "Enter WIFI SSID: " WIFI_SSID
-    fi
-
-    if [[ -z "${WIFI_PASSWORD}" ]]; then
-      read -r -e -p "Enter WIFI Password: " WIFI_PASSWORD
-    fi
-
-    wpa_passphrase "${WIFI_SSID}" "${WIFI_PASSWORD}" >> /etc/wpa_supplicant/wpa_supplicant.conf
-    cat /etc/wpa_supplicant/wpa_supplicant.conf
-fi
-
-echo ""
-echo "wlan0 now configured as: ${NEW_MODE}"
+echo "wlan0 now configured as: ${MODE}"
