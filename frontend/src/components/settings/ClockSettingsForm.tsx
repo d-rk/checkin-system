@@ -1,11 +1,12 @@
 import {
-  Button,
-  Divider,
-  FormControl,
-  FormErrorMessage,
-  FormLabel, Heading,
-  Input,
-  SimpleGrid,
+    Box,
+    Button, Checkbox,
+    Divider,
+    FormControl,
+    FormErrorMessage,
+    FormLabel, Heading,
+    Input,
+    SimpleGrid,
 } from '@chakra-ui/react';
 import React, {FC} from 'react';
 import {useForm} from 'react-hook-form';
@@ -43,6 +44,12 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
     defaultValues: toLocaleString(currentClock),
   });
 
+  const [manualClock, setManualClock] = React.useState<boolean>(false);
+
+    const toggleManualClock = () => {
+        setManualClock(prevChecked => !prevChecked);
+    };
+
   const onSubmitInternal = async (newClock: Clock) => {
     if (dirtyFields.timestamp) {
       await onSubmit(fromLocaleString(newClock));
@@ -67,6 +74,7 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
               })}
               placeholder="enter refTimestamp"
               minW={235}
+              disabled
               readOnly
             />
             <FormErrorMessage>
@@ -80,11 +88,16 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
                   required: 'field is required',
                 })}
                 placeholder="enter timestamp"
+                disabled={!manualClock}
+                readOnly={!manualClock}
             />
             <FormErrorMessage>
               {errors.timestamp && errors.timestamp.message}
             </FormErrorMessage>
           </FormControl>
+            <Checkbox onChange={toggleManualClock} isChecked={manualClock}>
+                Manually enter clock time
+            </Checkbox>
         </SimpleGrid>
 
         <Button
