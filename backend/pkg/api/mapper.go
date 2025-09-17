@@ -1,8 +1,11 @@
 package api
 
 import (
+	"os"
+	"strconv"
 	"time"
 
+	"github.com/d-rk/checkin-system/pkg/auth"
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/user"
@@ -133,4 +136,32 @@ func fromAPIRefTimestamp(timestamp string) (time.Time, error) {
 		return time.Time{}, e
 	}
 	return val, nil
+}
+
+func generateBearerToken(userID int64) (BearerToken, error) {
+
+	var (
+		bearerToken BearerToken
+		err         error
+	)
+
+	bearerToken.Token, err = auth.GenerateToken(userID)
+	if err != nil {
+		return BearerToken{}, err
+	}
+
+	bearerToken.RefreshToken, err = auth.GenerateRefreshToken(userID)
+	if err != nil {
+		return BearerToken{}, err
+	}
+
+	tokenExpiryMinutesStr := os.Getenv("TOKEN_EXPIRY_MINUTES")
+	if tokenExpiryMinutesStr != "" {
+		if tokenExpiryMinutes, parseErr := strconv.Atoi(tokenExpiryMinutesStr); parseErr == nil {
+			expirySeconds := int((time.Duration(tokenExpiryMinutes) * time.Minute).Seconds())
+			bearerToken.ExpiresIn = &expirySeconds
+		}
+	}
+
+	return bearerToken, nil
 }

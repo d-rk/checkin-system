@@ -53,18 +53,43 @@ func (h *apiHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := auth.GenerateToken(u.ID)
+	bearerToken, err := generateBearerToken(u.ID)
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
-
-	writeJSON(w, r, http.StatusOK, BearerToken{Token: token})
+	writeJSON(w, r, http.StatusOK, bearerToken)
 }
 
 func (h *apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	refreshRequest := &RefreshTokenRequest{}
+
+	if err := json.NewDecoder(r.Body).Decode(&refreshRequest); err != nil {
+		handlerError(w, r, ErrBadRequest.Wrap(err))
+		return
+	}
+
+	claims, err := auth.ValidateRefreshToken(refreshRequest.RefreshToken)
+	if err != nil {
+		handlerError(w, r, ErrInvalidCredentials.Wrap(err))
+		return
+	}
+
+	_, err = h.userService.GetUserByID(r.Context(), claims.UserID)
+	if err != nil && errors.Is(err, app.ErrNotFound) {
+		handlerError(w, r, ErrNotFound.Wrap(err))
+		return
+	} else if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	bearerToken, err := generateBearerToken(claims.UserID)
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, bearerToken)
 }
 
 func (h *apiHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
@@ -371,7 +396,7 @@ func (h *apiHandler) SetClock(w http.ResponseWriter, r *http.Request, params Set
 		return
 	}
 
-	h.GetClock(w, r, GetClockParams{Ref: params.Ref})
+	h.GetClock(w, r, GetClockParams(params))
 }
 
 func (h *apiHandler) GetVersion(w http.ResponseWriter, r *http.Request) {

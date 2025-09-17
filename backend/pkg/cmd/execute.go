@@ -25,14 +25,14 @@ type executor struct{}
 func (executor) Call(ctx context.Context, command string, arg ...string) error {
 	cmd := exec.CommandContext(ctx, command, arg...)
 
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		return err
+	stdout, stdOutErr := cmd.StdoutPipe()
+	if stdOutErr != nil {
+		return stdOutErr
 	}
 
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		return err
+	stderr, stdErrErr := cmd.StderrPipe()
+	if stdErrErr != nil {
+		return stdErrErr
 	}
 
 	if err := cmd.Start(); err != nil {
@@ -41,7 +41,7 @@ func (executor) Call(ctx context.Context, command string, arg ...string) error {
 
 	logger := slog.Default().With(slog.Group("exec"))
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(2) //nolint:mnd // two goroutines
 
 	// Handle stdout in a goroutine
 	go func() {
@@ -67,7 +67,7 @@ func (executor) Call(ctx context.Context, command string, arg ...string) error {
 		}
 	}()
 
-	err = cmd.Wait()
+	err := cmd.Wait()
 	wg.Wait()
 	return err
 }

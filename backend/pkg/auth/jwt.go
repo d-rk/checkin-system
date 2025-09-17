@@ -18,6 +18,12 @@ type TokenClaims struct {
 	UserID int64 `json:"userId"`
 }
 
+type RefreshTokenClaims struct {
+	jwt.RegisteredClaims
+
+	UserID int64 `json:"userId"`
+}
+
 func GenerateToken(userID int64) (string, error) {
 
 	now := time.Now()
@@ -37,6 +43,57 @@ func GenerateToken(userID int64) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+}
+
+// GenerateRefreshToken creates a new refresh token for the given user ID.
+// The refresh token has a longer expiry time than the access token.
+func GenerateRefreshToken(userID int64) (string, error) {
+	now := time.Now()
+	refreshTokenExpiryDays := 30 // Default to 30 days if env var not set
+
+	if refreshDaysStr := os.Getenv("REFRESH_TOKEN_EXPIRY_DAYS"); refreshDaysStr != "" {
+		if days, err := strconv.Atoi(refreshDaysStr); err == nil {
+			refreshTokenExpiryDays = days
+		}
+	}
+
+	claims := RefreshTokenClaims{
+		UserID: userID,
+		RegisteredClaims: jwt.RegisteredClaims{
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24 * time.Duration(refreshTokenExpiryDays))),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(os.Getenv("API_SECRET")))
+}
+
+func ValidateRefreshToken(tokenString string) (*RefreshTokenClaims, error) {
+	claims := &RefreshTokenClaims{}
+
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(os.Getenv("API_SECRET")), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("refresh token invalid")
+	}
+
+	claims, ok := token.Claims.(*RefreshTokenClaims)
+
+	if !ok {
+		return nil, errors.New("token valid but couldn't parse claims")
+	}
+
+	return claims, nil
 }
 
 func FindToken(request *http.Request) (string, error) {
