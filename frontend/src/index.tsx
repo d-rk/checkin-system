@@ -16,6 +16,8 @@ import './style.scss';
 import {AuthProvider, RequireAuth} from './components/auth/AuthProvider';
 import LoginPage from './pages/LoginPage';
 import LogoutPage from './pages/LogoutPage';
+import {SettingsPage} from "./pages/SettingsPage";
+import {VersionsPage} from "./pages/VersionsPage";
 
 const rootElement = document.getElementById('root');
 
@@ -73,6 +75,22 @@ root.render(
                       </RequireAuth>
                     }
                   />
+                <Route
+                    path="/settings"
+                    element={
+                        <RequireAuth>
+                            <SettingsPage />
+                        </RequireAuth>
+                    }
+                />
+                <Route
+                    path="/versions"
+                    element={
+                        <RequireAuth>
+                            <VersionsPage />
+                        </RequireAuth>
+                    }
+                />
                   <Route
                     path="*"
                     element={

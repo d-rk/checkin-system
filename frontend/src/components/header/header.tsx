@@ -19,7 +19,7 @@ import {NavLink} from 'react-router-dom';
 import Logo from '../../assets/logo.svg?react';
 import {useAuth} from '../auth/AuthProvider';
 import {useClock} from '../../api/checkInSystemApi';
-import {parseISO} from 'date-fns';
+import {parseISO, startOfMinute} from 'date-fns';
 import {errorToast} from '../../utils/toast';
 
 const links = [
@@ -32,7 +32,7 @@ const Header = () => {
   const hoverBg = useColorModeValue('gray.200', 'gray.700');
   const {user, isAuthenticated} = useAuth();
 
-  const now = useMemo(() => new Date(), []);
+  const now = startOfMinute(new Date());
 
   const {data: clock} = useClock(now);
   const toast = useToast();
@@ -139,6 +139,12 @@ const Header = () => {
             <Box bg="blue.100" w="100%" p={2}>
               Logged in as <b>{user?.name}</b>
             </Box>
+            <MenuItem as={NavLink} to="/settings">
+              Settings
+            </MenuItem>
+            <MenuItem as={NavLink} to="/versions">
+              Versions
+            </MenuItem>
             <MenuItem as={NavLink} to="/logout">
               Logout
             </MenuItem>

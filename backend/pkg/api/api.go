@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/d-rk/checkin-system/pkg/version"
+
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/auth"
 	"github.com/d-rk/checkin-system/pkg/checkin"
@@ -348,6 +350,43 @@ func (h *apiHandler) GetClock(w http.ResponseWriter, r *http.Request, params Get
 		return
 	}
 	writeJSON(w, r, http.StatusOK, toAPIClock(params.Ref, &c))
+}
+
+func (h *apiHandler) SetClock(w http.ResponseWriter, r *http.Request, params SetClockParams) {
+
+	ts, err := fromAPIRefTimestamp(params.Ref)
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	err = h.clockService.SetClock(r.Context(), ts)
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	h.GetClock(w, r, GetClockParams{Ref: params.Ref})
+}
+
+func (h *apiHandler) GetVersion(w http.ResponseWriter, r *http.Request) {
+
+	var buildTime *string
+	var gitCommit *string
+
+	if version.BuildTime != "" {
+		buildTime = &version.BuildTime
+	}
+
+	if version.GitCommit != "" {
+		gitCommit = &version.GitCommit
+	}
+
+	writeJSON(w, r, http.StatusOK, VersionInfo{
+		Version:   version.Version,
+		BuildTime: buildTime,
+		GitCommit: gitCommit,
+	})
 }
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {

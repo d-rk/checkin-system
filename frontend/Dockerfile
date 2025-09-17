@@ -1,5 +1,9 @@
 # build environment
 FROM node:20-alpine AS build
+
+ARG VERSION
+ARG GIT_COMMIT
+
 WORKDIR /app
 ENV PATH=/app/node_modules/.bin:$PATH
 COPY package.json ./
@@ -8,6 +12,11 @@ RUN npm config set fetch-retry-mintimeout 100000
 RUN npm config set fetch-retry-maxtimeout 600000
 RUN npm ci --no-audit
 COPY . ./
+
+RUN echo "VITE_FRONTEND_VERSION=$VERSION" >> .env.production
+RUN echo "VITE_FRONTEND_BUILD_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> .env.production
+RUN echo "VITE_FRONTEND_GIT_COMMIT=$GIT_COMMIT" >> .env.production
+
 RUN npm run build
 
 # production environment

@@ -123,3 +123,14 @@ func toAPIClock(refTimestamp string, c *clock.Clock) *Clock {
 		Timestamp:    c.Timestamp.Format(time.RFC3339),
 	}
 }
+
+func fromAPIRefTimestamp(timestamp string) (time.Time, error) {
+
+	loc, _ := time.LoadLocation("Local")
+
+	val, e := time.ParseInLocation(time.RFC3339, timestamp, loc)
+	if e != nil {
+		return time.Time{}, e
+	}
+	return val, nil
+}

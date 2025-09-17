@@ -69,10 +69,14 @@ sed -i -E 's/^#?(dtparam=i2c_arm)=.*/\1=on/' "$CONFIG_FILE"
 echo "dtoverlay=dwc2" >> "$CONFIG_FILE"
 
 # module for RTC
-echo "dtoverlay=i2c-rtc,pcf8523" >> "$CONFIG_FILE"
+DEFAULT_RTC_MODULE=pcf8523
+if [[ -z "${RTC_MODULE}" ]]; then
+  read -r -e -p "Which RTC Module to use (ds3231,pcf8523): " -i "$DEFAULT_RTC_MODULE" RTC_MODULE
+fi
+
+echo "dtoverlay=i2c-rtc,$RTC_MODULE" >> "$CONFIG_FILE"
 
 finish_patch "$CONFIG_FILE"
-
 
 # ---
 CMDLINE_FILE="$TARGET_DIR/cmdline.txt"
@@ -123,7 +127,9 @@ sed -i -E 's/^#?(AUTO_SETUP_GLOBAL_PASSWORD)=.*/\1=check1n!/' "$DIETPI_FILE"
 
 # public key for ssh
 DEFAULT_PUBKEY_LOCATION=~/.ssh/id_rsa.pub
-read -r -e -p "Copy ssh public key from: " -i "$DEFAULT_PUBKEY_LOCATION" PUBKEY_LOCATION
+if [[ -z "${PUBKEY_LOCATION}" ]]; then
+  read -r -e -p "Copy ssh public key from: " -i "$DEFAULT_PUBKEY_LOCATION" PUBKEY_LOCATION
+fi
 
 if [ ! -f "$PUBKEY_LOCATION" ]; then
   echo "$PUBKEY_LOCATION does not exist."

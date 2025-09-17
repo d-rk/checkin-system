@@ -20,6 +20,9 @@ services:
     build:
       context: ./backend
       dockerfile: "Dockerfile"
+      args:
+        VERSION: ${TAG:-latest}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
       tags:
         - quay.io/d_rk/checkin-system-backend:${TAG:-latest}
       x-bake:
@@ -53,6 +56,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      args:
+        VERSION: ${TAG:-latest}
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
       dockerfile: "Dockerfile"
       tags:
         - quay.io/d_rk/checkin-system-frontend:${TAG:-latest}

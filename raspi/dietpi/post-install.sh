@@ -5,7 +5,7 @@ set -e
 
 echo ""
 echo "Install isc-dhcp-server hostapd ..."
-apt install isc-dhcp-server hostapd -y
+apt install isc-dhcp-server hostapd util-linux-extra -y
 systemctl enable isc-dhcp-server
 systemctl unmask hostapd
 systemctl enable hostapd

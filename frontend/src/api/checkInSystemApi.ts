@@ -1,5 +1,5 @@
 import axios, {AxiosResponse} from 'axios';
-import {format} from 'date-fns';
+import {format, formatISO} from 'date-fns';
 import FileDownload from 'js-file-download';
 import useSWR, {SWRResponse} from 'swr';
 import {ExponentialBackoff, Websocket, WebsocketBuilder} from 'websocket-ts';
@@ -41,6 +41,18 @@ export type CheckInDate = {
 export type Clock = {
   refTimestamp: string;
   timestamp: string;
+};
+
+export type VersionInfo = {
+  version: string;
+  buildTime: string;
+  gitCommit: string;
+};
+
+export type WlanInfo = {
+  hotspotMode: boolean;
+  ssid: string;
+  password?: string;
 };
 
 export type BearerToken = {
@@ -90,8 +102,19 @@ export const useUserGroups = (): SWRResponse<string[], Error> => {
 
 export const useClock = (ref: Date): SWRResponse<Clock, Error> => {
   return useSWR<Clock, Error>(
-    `/api/v1/clock?ref=${ref.toISOString()}`,
+    `/api/v1/clock?ref=${encodeURIComponent(formatISO(ref))}`,
     fetcher
+  );
+};
+
+export const setHardwareClock = (ref: Date) => {
+  return axios.put(`/api/v1/clock?ref=${encodeURIComponent(formatISO(ref))}`);
+};
+
+export const useVersion = (): SWRResponse<VersionInfo, Error> => {
+  return useSWR<VersionInfo, Error>(
+      `/api/v1/version`,
+      fetcher
   );
 };
 

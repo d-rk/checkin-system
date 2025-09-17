@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/d-rk/checkin-system/pkg/version"
+
 	"github.com/d-rk/checkin-system/pkg/api"
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
@@ -23,10 +25,6 @@ import (
 	"github.com/joho/godotenv"
 	netHttpMiddleware "github.com/oapi-codegen/nethttp-middleware"
 )
-
-var Version = "latest"
-var BuildTime string
-var GitCommit string
 
 const defaultMaxAge = 300
 const defaultTimeout = 60 * time.Second
@@ -64,7 +62,8 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 
 func Run() {
 
-	slog.Info("starting up", "version", Version, "build_time", BuildTime, "git_commit", GitCommit)
+	slog.Info("starting up", "version", version.Version, "build_time", version.BuildTime,
+		"git_commit", version.GitCommit)
 
 	db := NewDB(true)
 	defer db.Close()

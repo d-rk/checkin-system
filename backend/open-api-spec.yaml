@@ -350,7 +350,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Clock"
-
+    put:
+      tags:
+        - clock
+      description: set current (hardware) time
+      operationId: setClock
+      parameters:
+        - in: query
+          name: ref
+          schema:
+            type: string
+            format: datetime
+          required: true
+      responses:
+        "200":
+          description: "current clock"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Clock"
+  /api/v1/version:
+    get:
+      tags:
+        - version
+      description: get backend version
+      operationId: getVersion
+      responses:
+        "200":
+          description: "current version"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionInfo"
 components:
   parameters:
     userIdPathParam:
@@ -467,6 +498,18 @@ components:
         timestamp:
           type: string
           format: datetime
+
+    VersionInfo:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+        buildTime:
+          type: string
+        gitCommit:
+          type: string
 
     BearerToken:
       type: object

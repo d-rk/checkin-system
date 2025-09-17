@@ -46,6 +46,26 @@ After the setup the raspi is available via:
 1. USB Ethernet with ip 192.168.12.1
 2. WLAN Hotspot with ip 192.168.14.1
 
+#### Mounting USB Flash Drives on Windows Subsystem for Linux (WSL)
+
+To use a USB Flash Drive with WSL, you need to connect it to WSL first.
+https://devblogs.microsoft.com/commandline/connecting-usb-devices-to-wsl/
+
+Afterward, you can mount it with the following command:
+
+```shell
+sudo mkdir /media/usb1
+sudo mkdir /media/usb2
+
+lsblk # find the correct devices, e.g. /dev/sde1 /dev/sde2
+sudo mount /dev/sde1 /media/usb1
+sudo mount /dev/sde2 /media/usb2
+
+# unmount
+sudo umount /media/usb1
+sudo umount /media/usb2
+```
+
 #### Manual
 
 When installing a different distribution on the Raspi, the following steps
@@ -282,10 +302,13 @@ echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
 
 # build and push with tag
 git tag v2.2 # create tag
-TAG=$(git describe --tags --abbrev=0) docker buildx bake --push
+TAG=$(git describe --tags --abbrev=0) GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake --push
 
 # build and push latest
-docker buildx bake --push
+GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake --push
+
+# build and push latest and backend only
+GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake backend --push
 
 # push git tags
 git push --tags

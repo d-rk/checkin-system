@@ -5,6 +5,18 @@ type ApiErrorResponse = {
   error: string;
 };
 
+export const successToast = (
+    message: string,
+): UseToastOptions => {
+  return {
+    title: 'Operation successful',
+    description: message,
+    status: 'success',
+    duration: 3000,
+    isClosable: true,
+  };
+};
+
 export const errorToast = (
   message: string,
   error?: unknown
