@@ -29,7 +29,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/BearerToken"
-
+  /api/refresh-token:
+    post:
+      tags:
+        - auth
+      security: []
+      description: refresh access token using refresh token
+      operationId: refreshToken
+      requestBody:
+        description: refresh token
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: "new bearer token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BearerToken"
+        "401":
+          description: "invalid refresh token"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/users:
     get:
       tags:
@@ -416,7 +442,13 @@ components:
           type: string
         password:
           type: string
-
+    RefreshTokenRequest:
+      type: object
+      required:
+        - refreshToken
+      properties:
+        refreshToken:
+          type: string
     NewUser:
       type: object
       required:
@@ -515,9 +547,17 @@ components:
       type: object
       required:
         - token
+        - refreshToken
       properties:
         token:
           type: string
+          description: Access token for authenticating requests
+        refreshToken:
+          type: string
+          description: Token used to get a new access token when it expires
+        expiresIn:
+          type: integer
+          description: Time in seconds until the access token expires
 
     ErrorResponse:
       required:

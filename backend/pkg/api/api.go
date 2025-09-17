@@ -62,6 +62,11 @@ func (h *apiHandler) Login(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, r, http.StatusOK, BearerToken{Token: token})
 }
 
+func (h *apiHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (h *apiHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
 	users, err := h.userService.ListUsers(r.Context())
 	if err != nil {
