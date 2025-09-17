@@ -21,6 +21,7 @@ import {useAuth} from '../auth/AuthProvider';
 import {useClock} from '../../api/checkInSystemApi';
 import {parseISO, startOfMinute} from 'date-fns';
 import {errorToast} from '../../utils/toast';
+import {toLocaleString} from "../settings/ClockSettingsForm";
 
 const links = [
   {name: 'Calendar', route: '/calendar'},
@@ -53,7 +54,7 @@ const Header = () => {
     if (clock && clockDiff) {
       toast(
         errorToast(
-          `hardware clock shows ${clock?.timestamp}, which is out of sync by ${clockDiff / 60} minutes`
+          `hardware clock shows ${toLocaleString(clock).timestamp}, which is out of sync by ${Math.round(clockDiff / 60)} minutes`
         )
       );
     }

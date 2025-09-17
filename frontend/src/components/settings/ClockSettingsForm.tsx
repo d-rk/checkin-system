@@ -17,12 +17,12 @@ import {format, formatISO, parse, parseISO} from "date-fns";
 
 type Props = {
   currentClock: Clock;
-  onSubmit: (newClock: Clock) => void;
+  onSubmit: (newClock: Clock) => Promise<void>;
 };
 
 const DATE_FORMAT = "dd.MM.yyyy HH:mm:ss";
 
-const toLocaleString = (clock: Clock): Clock => ({
+export const toLocaleString = (clock: Clock): Clock => ({
   refTimestamp: format(parseISO(clock.refTimestamp), DATE_FORMAT),
   timestamp: format(parseISO(clock.timestamp), DATE_FORMAT),
 });
@@ -43,12 +43,12 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
     defaultValues: toLocaleString(currentClock),
   });
 
-  const onSubmitInternal = (newClock: Clock) => {
+  const onSubmitInternal = async (newClock: Clock) => {
     if (dirtyFields.timestamp) {
-      onSubmit(fromLocaleString(newClock));
+      await onSubmit(fromLocaleString(newClock));
       reset();
     } else {
-      onSubmit({...fromLocaleString(newClock), timestamp: formatISO(new Date())});
+      await onSubmit({...fromLocaleString(newClock), timestamp: formatISO(new Date())});
       reset();
     }
   };
