@@ -53,10 +53,10 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
   const onSubmitInternal = async (newClock: Clock) => {
     if (dirtyFields.timestamp) {
       const updatedClock = await onSubmit(fromLocaleString(newClock));
-      reset(updatedClock);
+      reset(toLocaleString(updatedClock));
     } else {
       const updatedClock = await onSubmit({...fromLocaleString(newClock), timestamp: formatISO(new Date())});
-      reset(updatedClock);
+      reset(toLocaleString(updatedClock));
     }
   };
 
