@@ -4,6 +4,12 @@ import FileDownload from 'js-file-download';
 import useSWR, {SWRResponse} from 'swr';
 import {ExponentialBackoff, Websocket, WebsocketBuilder} from 'websocket-ts';
 import {WEBSOCKET_BASE_URL} from './config';
+import {
+  storeTokens,
+  clearTokens,
+  getStoredRefreshToken,
+  setAuthHeader
+} from './tokenService';
 
 export type UserFields = {
   name: string;
@@ -57,14 +63,14 @@ export type WlanInfo = {
 
 export type BearerToken = {
   token: string;
+  refreshToken: string;
+  expiresIn?: number;
 };
 
 type Credentials = {
   username: string;
   password: string;
 };
-
-let lastCredentials: Credentials;
 
 export const isCheckInMessage = (message: any): message is CheckInMessage => {
   return (message as CheckInMessage).rfid_uid !== undefined;
@@ -81,15 +87,33 @@ export const apiLogin = async (
   const response = await axios.post('/api/login', credentials);
 
   if (response.status === 200) {
-    lastCredentials = credentials;
+    storeTokens(response.data);
+    setAuthHeader(response.data.token);
   }
 
   return response.data;
 };
 
-export const refreshAccessToken = async () => {
-  // not really a refresh of token atm
-  return apiLogin(lastCredentials);
+export const refreshAccessToken = async (): Promise<BearerToken> => {
+  const refreshToken = getStoredRefreshToken();
+
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
+
+  try {
+    const response = await axios.post('/api/refresh-token', { refreshToken });
+
+    if (response.status === 200) {
+      storeTokens(response.data);
+      setAuthHeader(response.data.token);
+    }
+
+    return response.data;
+  } catch (error) {
+    clearTokens();
+    throw error;
+  }
 };
 
 export const useUserList = (): SWRResponse<User[], Error> => {
