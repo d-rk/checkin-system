@@ -12,13 +12,15 @@ export const SettingsPage: FC = () => {
     const now = startOfMinute(new Date());
     const {data: clock, isLoading, error, mutate} = useClock(now);
 
-    const handleClockSet = async (newClock: Clock) => {
+    const handleClockSet = async (newClock: Clock) : Promise<Clock> => {
         try {
             await setHardwareClock(parseISO(newClock.timestamp));
-            await mutate();
+            const newClock = await mutate();
             toast(successToast('hardware clock updated'));
+            return newClock as Clock;
         } catch (error) {
             toast(errorToast('unable set hardware clock', error));
+            throw error
         }
     }
 
