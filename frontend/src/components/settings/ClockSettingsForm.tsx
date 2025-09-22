@@ -1,37 +1,25 @@
 import {
-    Box,
-    Button, Checkbox,
+    Button,
+    Checkbox,
     Divider,
     FormControl,
     FormErrorMessage,
-    FormLabel, Heading,
+    FormLabel,
+    Heading,
     Input,
     SimpleGrid,
 } from '@chakra-ui/react';
 import React, {FC} from 'react';
 import {useForm} from 'react-hook-form';
-import {
-  Clock,
-} from '../../api/checkInSystemApi';
+import {Clock} from '../../api/checkInSystemApi';
 
-import {format, formatISO, parse, parseISO} from "date-fns";
+import {formatISO} from "date-fns";
+import {fromLocaleClock, toLocaleClock} from "../../utils/time";
 
 type Props = {
   currentClock: Clock;
   onSubmit: (newClock: Clock) => Promise<Clock>;
 };
-
-const DATE_FORMAT = "dd.MM.yyyy HH:mm:ss";
-
-export const toLocaleString = (clock: Clock): Clock => ({
-  refTimestamp: format(parseISO(clock.refTimestamp), DATE_FORMAT),
-  timestamp: format(parseISO(clock.timestamp), DATE_FORMAT),
-});
-
-const fromLocaleString = (clock: Clock): Clock => ({
-  refTimestamp: formatISO(parse(clock.refTimestamp, DATE_FORMAT, new Date())),
-  timestamp: formatISO(parse(clock.timestamp, DATE_FORMAT, new Date())),
-});
 
 export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
 
@@ -41,7 +29,7 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
     reset,
     formState: {errors, dirtyFields, isSubmitting},
   } = useForm<Clock>({
-    defaultValues: toLocaleString(currentClock),
+    defaultValues: toLocaleClock(currentClock),
   });
 
   const [manualClock, setManualClock] = React.useState<boolean>(false);
@@ -52,11 +40,11 @@ export const ClockSettingsForm: FC<Props> = ({currentClock, onSubmit}) => {
 
   const onSubmitInternal = async (newClock: Clock) => {
     if (dirtyFields.timestamp) {
-      const updatedClock = await onSubmit(fromLocaleString(newClock));
-      reset(toLocaleString(updatedClock));
+      const updatedClock = await onSubmit(fromLocaleClock(newClock));
+      reset(toLocaleClock(updatedClock));
     } else {
-      const updatedClock = await onSubmit({...fromLocaleString(newClock), timestamp: formatISO(new Date())});
-      reset(toLocaleString(updatedClock));
+      const updatedClock = await onSubmit({...fromLocaleClock(newClock), timestamp: formatISO(new Date())});
+      reset(toLocaleClock(updatedClock));
     }
   };
 

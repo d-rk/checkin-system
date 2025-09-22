@@ -46,6 +46,42 @@ After the setup the raspi is available via:
 1. USB Ethernet with ip 192.168.12.1
 2. WLAN Hotspot with ip 192.168.14.1
 
+#### USB Ethernet on Windows Subsystem for Linux (WSL)
+
+##### Make USB Devices available in WSL
+
+in an administrator command prompt run:
+
+```shell
+# list available devices
+usbipd list
+
+# share device (change 1-4 to your device) needs to be done once
+usbipd bind --busid 1-4
+
+# attach device (change 1-4 to your device) to wsl
+usbipd attach --wsl --busid 1-4
+
+# detach device (change 1-4 to your device) to wsl
+usbipd detach --busid 1-4
+```
+
+##### Configure USB Ethernet in WSL
+
+```shell
+# list usb devices
+lsusb
+
+# additional interface should show up (normally usb0 something something cryptic)
+ip a
+
+# configure interface
+sudo ifconfig usb0 192.168.12.2 up
+
+# connect
+ssh root@192.168.12.1
+```
+
 #### Mounting USB Flash Drives on Windows Subsystem for Linux (WSL)
 
 To use a USB Flash Drive with WSL, you need to connect it to WSL first.

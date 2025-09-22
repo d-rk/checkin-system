@@ -7,6 +7,7 @@ wlan_config=/etc/network/interfaces.d/wlan0
 
 function switch_to_client_mode() {
   echo ""
+  echo ""
   echo "Configure wlan0 interface as client..."
   cat > "$wlan_config" <<- EOM
 auto wlan0
@@ -29,26 +30,15 @@ EOM
   ifdown wlan0 || true
   ifup wlan0 || true
 
-  echo ""
-  echo "Available networks:"
-  wpa_cli list_networks
-
-  read -p "Add an additional network? [y/n] " -n 1 -r
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-      if [[ -z "${WIFI_SSID}" ]]; then
-        read -r -e -p "Enter WIFI SSID: " WIFI_SSID
-      fi
-
-      if [[ -z "${WIFI_PASSWORD}" ]]; then
-        read -r -e -p "Enter WIFI Password: " WIFI_PASSWORD
-      fi
-
-      wpa_passphrase "${WIFI_SSID}" "${WIFI_PASSWORD}" >> /etc/wpa_supplicant/wpa_supplicant.conf
-      cat /etc/wpa_supplicant/wpa_supplicant.conf
+  if ! ip addr show wlan0 | grep -q 'inet '; then
+    echo ""
+    echo "FAILED: ifup wlan0 failed, fallback to hotspot..."
+    switch_to_hotspot_mode
   fi
 }
 
 function switch_to_hotspot_mode() {
+  echo ""
   echo ""
   echo "Configure wlan0 interface as hotspot..."
   cat > "$wlan_config" <<- EOM

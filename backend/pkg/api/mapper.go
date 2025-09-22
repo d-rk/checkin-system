@@ -127,6 +127,17 @@ func toAPIClock(refTimestamp string, c *clock.Clock) *Clock {
 	}
 }
 
+func toAPIWifiNetworks(networks []string) []WifiNetwork {
+	result := make([]WifiNetwork, len(networks))
+
+	for i, ssid := range networks {
+		result[i] = WifiNetwork{
+			Ssid: ssid,
+		}
+	}
+	return result
+}
+
 func fromAPIRefTimestamp(timestamp string) (time.Time, error) {
 
 	loc, _ := time.LoadLocation("Local")

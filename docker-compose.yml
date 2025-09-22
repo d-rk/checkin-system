@@ -49,8 +49,15 @@ services:
       - API_SECRET=${API_SECRET}
       - TOKEN_EXPIRY_MINUTES=60
       - ADMIN_PASSWORD=${API_ADMIN_PASSWORD}
+      - USE_SSH_TUNNEL=true
+      - SSH_HOST=host.docker.internal
+      - SSH_PASSWORD=check1n!
     networks:
       - checkin-system-network
+    volumes:
+      - /tmp:/tmp
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # frontend
   frontend:

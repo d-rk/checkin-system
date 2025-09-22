@@ -408,6 +408,72 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/VersionInfo"
+  /api/v1/wifi/networks:
+    get:
+      tags:
+        - wifi
+      description: list configured wifi networks
+      operationId: getWifiNetworks
+      responses:
+        "200":
+          description: "list of networks"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WifiNetwork"
+    post:
+      tags:
+        - wifi
+      description: add or update a wifi network
+      operationId: addWifiNetwork
+      requestBody:
+        description: wifi network
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WifiNetwork"
+      responses:
+        "204":
+          description: "network added/updated"
+  /api/v1/wifi/networks/{ssid}:
+    delete:
+      tags:
+        - wifi
+      parameters:
+        - $ref: "#/components/parameters/ssidPathParam"
+      description: remove a wifi network
+      operationId: removeWifiNetwork
+      responses:
+        "204":
+          description: "network removed"
+  /api/v1/wifi/hotspot:
+    get:
+      tags:
+        - wifi
+      description: is hotspot mode enabled
+      operationId: getWifiMode
+      responses:
+        "200":
+          description: "is hotspot mode enabled"
+          content:
+            application/json:
+              schema:
+                type: boolean
+    put:
+      tags:
+        - wifi
+      description: toggle hotspot mode
+      operationId: toggleWifiMode
+      responses:
+        "200":
+          description: "is hotspot mode enabled"
+          content:
+            application/json:
+              schema:
+                type: boolean
 components:
   parameters:
     userIdPathParam:
@@ -424,6 +490,13 @@ components:
       schema:
         type: integer
         format: int64
+    ssidPathParam:
+      name: ssid
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
   schemas:
     Password:
       type: object
@@ -541,6 +614,17 @@ components:
         buildTime:
           type: string
         gitCommit:
+          type: string
+
+    WifiNetwork:
+      type: object
+      required:
+        - ssid
+      properties:
+        ssid:
+          type: string
+          minLength: 1
+        password:
           type: string
 
     BearerToken:

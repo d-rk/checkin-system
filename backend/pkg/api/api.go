@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/d-rk/checkin-system/pkg/version"
+	"github.com/d-rk/checkin-system/pkg/wifi"
 
 	"github.com/d-rk/checkin-system/pkg/app"
 	"github.com/d-rk/checkin-system/pkg/auth"
@@ -25,13 +26,16 @@ type apiHandler struct {
 	userService    user.Service
 	checkinService checkin.Service
 	clockService   clock.Service
+	wifiService    wifi.Service
 }
 
-func NewHandler(userService user.Service, checkinService checkin.Service, clockService clock.Service) ServerInterface {
+func NewHandler(userService user.Service, checkinService checkin.Service, clockService clock.Service,
+	wifiService wifi.Service) ServerInterface {
 	return &apiHandler{
 		userService:    userService,
 		checkinService: checkinService,
 		clockService:   clockService,
+		wifiService:    wifiService,
 	}
 }
 
@@ -417,6 +421,68 @@ func (h *apiHandler) GetVersion(w http.ResponseWriter, r *http.Request) {
 		BuildTime: buildTime,
 		GitCommit: gitCommit,
 	})
+}
+
+func (h *apiHandler) GetWifiNetworks(w http.ResponseWriter, r *http.Request) {
+
+	networks, err := h.wifiService.ListNetworks(r.Context())
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	writeJSON(w, r, http.StatusOK, toAPIWifiNetworks(networks))
+}
+
+func (h *apiHandler) AddWifiNetwork(w http.ResponseWriter, r *http.Request) {
+
+	network := &WifiNetwork{}
+
+	if err := json.NewDecoder(r.Body).Decode(&network); err != nil {
+		handlerError(w, r, ErrBadRequest.Wrap(err))
+		return
+	}
+
+	if network.Password == nil || len(*network.Password) < 8 {
+		handlerError(w, r, ErrBadRequest.Wrap(errors.New("password too short, must be at least 8 characters")))
+		return
+	}
+
+	if err := h.wifiService.AddNetwork(r.Context(), network.Ssid, *network.Password); err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *apiHandler) RemoveWifiNetwork(w http.ResponseWriter, r *http.Request, ssid SsidPathParam) {
+
+	if err := h.wifiService.RemoveNetwork(r.Context(), ssid); err != nil {
+		handlerError(w, r, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *apiHandler) GetWifiMode(w http.ResponseWriter, r *http.Request) {
+
+	mode, err := h.wifiService.GetWifiMode(r.Context())
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, mode)
+}
+
+func (h *apiHandler) ToggleWifiMode(w http.ResponseWriter, r *http.Request) {
+	mode, err := h.wifiService.ToggleWifiMode(r.Context())
+	if err != nil {
+		handlerError(w, r, err)
+		return
+	}
+	writeJSON(w, r, http.StatusOK, mode)
 }
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {

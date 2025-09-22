@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/d-rk/checkin-system/pkg/version"
+	"github.com/d-rk/checkin-system/pkg/wifi"
 
 	"github.com/d-rk/checkin-system/pkg/api"
 	"github.com/d-rk/checkin-system/pkg/checkin"
@@ -52,12 +53,13 @@ func NewRouter(ctx context.Context, db *sqlx.DB) chi.Router {
 	userService := user.NewService(userRepo, ws)
 	checkinService := checkin.NewService(checkinRepo, userService, ws)
 	clockService := clock.NewService()
+	wifiService := wifi.NewService()
 
 	if err := checkinService.DeleteOldCheckIns(ctx); err != nil {
 		slog.WarnContext(ctx, "failed to delete old checkins", "error", err)
 	}
 
-	return setupRouter(userService, checkinService, clockService, ws)
+	return setupRouter(userService, checkinService, clockService, wifiService, ws)
 }
 
 func Run() {
@@ -85,6 +87,7 @@ func setupRouter(
 	userService user.Service,
 	checkinService checkin.Service,
 	clockService clock.Service,
+	wifiService wifi.Service,
 	ws *websocket.Server,
 ) chi.Router {
 
@@ -100,7 +103,7 @@ func setupRouter(
 	// that server names match. We don't know how this thing will be run.
 	swagger.Servers = nil
 
-	apiHandler := api.NewHandler(userService, checkinService, clockService)
+	apiHandler := api.NewHandler(userService, checkinService, clockService, wifiService)
 
 	router.Use(middleware.RequestID)
 	router.Use(middleware.RealIP)

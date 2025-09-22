@@ -2,14 +2,18 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"context"
+	"fmt"
 	"log/slog"
+	"os"
 	"os/exec"
-	"sync"
+	"strings"
 )
 
 type Executor interface {
 	Call(ctx context.Context, command string, arg ...string) error
+	CallString(ctx context.Context, command string, arg ...string) (string, error)
 }
 
 type Cmd interface {
@@ -17,57 +21,65 @@ type Cmd interface {
 }
 
 func NewExecutor() Executor {
-	return &executor{}
+	executor := executor{
+		useSshTunnel: os.Getenv("USE_SSH_TUNNEL") != "",
+	}
+
+	err := executor.Call(context.Background(), "echo", "executor initialized")
+	if err != nil {
+		panic(fmt.Errorf("failed to initialize executor: %w", err))
+	}
+
+	return &executor
 }
 
-type executor struct{}
+type executor struct {
+	useSshTunnel bool
+}
 
-func (executor) Call(ctx context.Context, command string, arg ...string) error {
-	cmd := exec.CommandContext(ctx, command, arg...)
+func (e *executor) CallString(ctx context.Context, command string, arg ...string) (string, error) {
 
-	stdout, stdOutErr := cmd.StdoutPipe()
-	if stdOutErr != nil {
-		return stdOutErr
+	var cmd *exec.Cmd
+
+	if e.useSshTunnel {
+		sshHost := os.Getenv("SSH_HOST")
+		sshPassword := os.Getenv("SSH_PASSWORD")
+		originalCommand := command + " " + strings.Join(arg, " ")
+
+		cmd = exec.CommandContext(ctx, "sshpass", "-p", sshPassword, "ssh",
+			"-o", "StrictHostKeyChecking=no", fmt.Sprintf("root@%s", sshHost), originalCommand)
+	} else {
+		cmd = exec.CommandContext(ctx, command, arg...)
 	}
 
-	stderr, stdErrErr := cmd.StderrPipe()
-	if stdErrErr != nil {
-		return stdErrErr
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		logOutputLines(ctx, slog.LevelError, command, output)
+		return string(output), fmt.Errorf("call failed: %s %v error=%w", command, arg, err)
+	}
+	return string(output), nil
+}
+
+func (e *executor) Call(ctx context.Context, command string, arg ...string) error {
+
+	output, err := e.CallString(ctx, command, arg...)
+	if err != nil {
+		return fmt.Errorf("%w\nOutput: %s", err, output)
+	}
+	logOutputLines(ctx, slog.LevelInfo, command, []byte(output))
+	return nil
+}
+
+func logOutputLines(ctx context.Context, level slog.Level, command string, output []byte) {
+
+	if len(output) == 0 {
+		return
 	}
 
-	if err := cmd.Start(); err != nil {
-		return err
+	scanner := bufio.NewScanner(bytes.NewReader(output))
+
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		slog.Log(ctx, level, "output", "line", line, "command", command)
 	}
-
-	logger := slog.Default().With(slog.Group("exec"))
-	var wg sync.WaitGroup
-	wg.Add(2) //nolint:mnd // two goroutines
-
-	// Handle stdout in a goroutine
-	go func() {
-		defer wg.Done()
-		scanner := bufio.NewScanner(stdout)
-		for scanner.Scan() {
-			logger.Debug(command, "stdout", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			logger.Error("error reading stdout", "error", err)
-		}
-	}()
-
-	// Handle stderr in a goroutine
-	go func() {
-		defer wg.Done()
-		scanner := bufio.NewScanner(stderr)
-		for scanner.Scan() {
-			logger.Error(command, "stderr", scanner.Text())
-		}
-		if err := scanner.Err(); err != nil {
-			logger.Error("error reading stderr", "error", err)
-		}
-	}()
-
-	err := cmd.Wait()
-	wg.Wait()
-	return err
 }

@@ -16,10 +16,15 @@ RUN make generate
 RUN make build VERSION=$VERSION COMMIT_SHA=$GIT_COMMIT
 
 FROM alpine:latest
-COPY --from=builder /app/checkin-system /checkin-system
-COPY --from=builder /app/db /db
 
 RUN touch .env
+RUN apk add --no-cache bash sshpass openssh
+
+RUN mkdir -p /root/.ssh && \
+    chmod 0700 /root/.ssh
+
+COPY --from=builder /app/checkin-system /checkin-system
+COPY --from=builder /app/db /db
 
 EXPOSE 8080
 

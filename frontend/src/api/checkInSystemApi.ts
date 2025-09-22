@@ -55,8 +55,7 @@ export type VersionInfo = {
   gitCommit: string;
 };
 
-export type WlanInfo = {
-  hotspotMode: boolean;
+export type WifiNetwork = {
   ssid: string;
   password?: string;
 };
@@ -246,4 +245,30 @@ export const createWebsocket = (
       console.log('retry');
     })
     .build();
+};
+
+export const useWifiNetworks = (): SWRResponse<WifiNetwork[], Error> => {
+    return useSWR<WifiNetwork[], Error>(
+        `/api/v1/wifi/networks`,
+        fetcher
+    );
+};
+
+export const useWifiMode = (): SWRResponse<boolean, Error> => {
+    return useSWR<boolean, Error>(
+        `/api/v1/wifi/hotspot`,
+        fetcher
+    );
+};
+
+export const toggleWifiMode = () => {
+    return axios.put('/api/v1/wifi/hotspot');
+};
+
+export const addWifiNetwork = (network : WifiNetwork) => {
+    return axios.post('/api/v1/wifi/networks', network);
+};
+
+export const removeWifiNetwork = (ssid: string) => {
+    return axios.delete(`/api/v1/wifi/networks/${ssid}`);
 };

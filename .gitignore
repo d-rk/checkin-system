@@ -11,3 +11,4 @@ frontend/dist
 
 /raspi/rfid_reader/.venv
 .env
+/backend/wpa_supplicant.conf
