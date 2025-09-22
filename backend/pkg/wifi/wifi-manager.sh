@@ -12,7 +12,7 @@ function usage() {
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo ""
     echo "Commands:"
-    echo "  add SSID PASSWORD     Add or update network (moves to top priority)"
+    echo "  add SSID PASSWORD    Add network (moves to top priority)"
     echo "  remove SSID          Remove network by SSID"
     echo "  list                 List all configured networks"
     echo "  mode                 Show current WiFi mode (client or hotspot)"
@@ -120,7 +120,7 @@ function remove_network() {
     return 0
 }
 
-function upsert_network() {
+function add_network() {
     local target_ssid="$1"
     local password="$2"
 
@@ -147,89 +147,30 @@ function upsert_network() {
 
     # Create a temporary file to build the new config
     local temp_file=$(mktemp)
-    local header_written=false
-    local network_found=false
-    local in_target_network=false
-    local current_network_block=""
-    local current_ssid=""
+    local network_inserted=false
 
-    # First, write the new network at the top (after header)
     while IFS= read -r line; do
-        if [[ "$header_written" == false ]]; then
-            echo "$line" >> "$temp_file"
-
-            # Check if this is the end of the header section
-            if [[ "$line" =~ ^country= ]] || [[ "$line" =~ ^update_config= ]] || [[ -z "$line" && "$line" != *"="* ]]; then
-                # Add new network after header
-                echo "" >> "$temp_file"
-                echo "$new_network_block" >> "$temp_file"
-                echo "" >> "$temp_file"
-                header_written=true
-            fi
-        else
-            break
+        # Check if this is the first network block
+        if [[ "$line" =~ ^network=\{ ]] && [[ "$network_inserted" == false ]]; then
+            # Insert new network before this existing network
+            echo "$new_network_block" >> "$temp_file"
+            echo "" >> "$temp_file"
+            network_inserted=true
         fi
+
+        # Copy the current line
+        echo "$line" >> "$temp_file"
     done < "$WPA_CONFIG"
 
-    # If we haven't written the header yet, it means the file doesn't have the expected format
-    if [[ "$header_written" == false ]]; then
-        echo "$new_network_block" >> "$temp_file"
+    # If we never found a network block, add the new network at the end
+    if [[ "$network_inserted" == false ]]; then
         echo "" >> "$temp_file"
-        header_written=true
+        echo "$new_network_block" >> "$temp_file"
     fi
-
-    # Now process the rest of the file, skipping any existing instance of the target network
-    local skip_lines=false
-    while IFS= read -r line; do
-        if [[ "$skip_lines" == true ]]; then
-            skip_lines=false
-            continue
-        fi
-
-        if [[ "$line" =~ ^network=\{ ]]; then
-            in_target_network=true
-            current_network_block="$line"$'\n'
-            continue
-        fi
-
-        if [[ "$in_target_network" == true ]]; then
-            current_network_block+="$line"$'\n'
-
-            if [[ "$line" =~ ^[[:space:]]*ssid=\"(.*)\" ]]; then
-                current_ssid="${BASH_REMATCH[1]}"
-            fi
-
-            if [[ "$line" =~ ^\} ]]; then
-                in_target_network=false
-
-                if [[ "$current_ssid" != "$target_ssid" ]]; then
-                    # Keep this network (it's not the target)
-                    echo -n "$current_network_block" >> "$temp_file"
-                else
-                    # Skip this network (we're replacing/updating it)
-                    network_found=true
-                fi
-
-                current_network_block=""
-                current_ssid=""
-                continue
-            fi
-        else
-            # Not in a network block and we've already written the header
-            if [[ "$header_written" == true ]]; then
-                echo "$line" >> "$temp_file"
-            fi
-        fi
-    done < <(tail -n +1 "$WPA_CONFIG" | sed '1,'"$(grep -n "^network=" "$WPA_CONFIG" | head -1 | cut -d: -f1)"'d' 2>/dev/null || tail -n +1 "$WPA_CONFIG")
 
     # Replace the original config with the new one
     mv "$temp_file" "$WPA_CONFIG"
-
-    if [[ "$network_found" == true ]]; then
-        echo "Updated network '$target_ssid' and moved to top priority"
-    else
-        echo "Added new network '$target_ssid' with top priority"
-    fi
+    echo "Added new network '$target_ssid' with top priority"
 }
 
 function list_networks() {
@@ -364,7 +305,7 @@ case "${1:-}" in
             echo "Usage: $0 add SSID PASSWORD"
             exit 1
         fi
-        upsert_network "$2" "$3"
+        add_network "$2" "$3"
         ;;
     "remove")
         if [[ $# -ne 2 ]]; then

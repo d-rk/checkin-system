@@ -1,5 +1,15 @@
 import {DeleteIcon} from '@chakra-ui/icons';
-import {IconButton, Table, TableCaption, TableContainer, Tbody, Td, Th, Thead, Tr,} from '@chakra-ui/react';
+import {
+  IconButton,
+  Table,
+  TableCaption,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+} from '@chakra-ui/react';
 import React, {FC} from 'react';
 import {WifiNetwork} from '../../api/checkInSystemApi';
 

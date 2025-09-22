@@ -8,7 +8,7 @@ import {
   storeTokens,
   clearTokens,
   getStoredRefreshToken,
-  setAuthHeader
+  setAuthHeader,
 } from './tokenService';
 
 export type UserFields = {
@@ -101,7 +101,7 @@ export const refreshAccessToken = async (): Promise<BearerToken> => {
   }
 
   try {
-    const response = await axios.post('/api/refresh-token', { refreshToken });
+    const response = await axios.post('/api/refresh-token', {refreshToken});
 
     if (response.status === 200) {
       storeTokens(response.data);
@@ -135,10 +135,7 @@ export const setHardwareClock = (ref: Date) => {
 };
 
 export const useVersion = (): SWRResponse<VersionInfo, Error> => {
-  return useSWR<VersionInfo, Error>(
-      `/api/v1/version`,
-      fetcher
-  );
+  return useSWR<VersionInfo, Error>('/api/v1/version', fetcher);
 };
 
 export const getAuthenticatedUser = async (): Promise<User> => {
@@ -248,27 +245,21 @@ export const createWebsocket = (
 };
 
 export const useWifiNetworks = (): SWRResponse<WifiNetwork[], Error> => {
-    return useSWR<WifiNetwork[], Error>(
-        `/api/v1/wifi/networks`,
-        fetcher
-    );
+  return useSWR<WifiNetwork[], Error>('/api/v1/wifi/networks', fetcher);
 };
 
 export const useWifiMode = (): SWRResponse<boolean, Error> => {
-    return useSWR<boolean, Error>(
-        `/api/v1/wifi/hotspot`,
-        fetcher
-    );
+  return useSWR<boolean, Error>('/api/v1/wifi/hotspot', fetcher);
 };
 
 export const toggleWifiMode = () => {
-    return axios.put('/api/v1/wifi/hotspot');
+  return axios.put('/api/v1/wifi/hotspot');
 };
 
-export const addWifiNetwork = (network : WifiNetwork) => {
-    return axios.post('/api/v1/wifi/networks', network);
+export const addWifiNetwork = (network: WifiNetwork) => {
+  return axios.post('/api/v1/wifi/networks', network);
 };
 
 export const removeWifiNetwork = (ssid: string) => {
-    return axios.delete(`/api/v1/wifi/networks/${ssid}`);
+  return axios.delete(`/api/v1/wifi/networks/${ssid}`);
 };

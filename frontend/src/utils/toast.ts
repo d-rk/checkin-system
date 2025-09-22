@@ -5,9 +5,7 @@ type ApiErrorResponse = {
   error: string;
 };
 
-export const successToast = (
-    message: string,
-): UseToastOptions => {
+export const successToast = (message: string): UseToastOptions => {
   return {
     title: 'Operation successful',
     description: message,

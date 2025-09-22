@@ -21,7 +21,7 @@ import {useAuth} from '../auth/AuthProvider';
 import {useClock} from '../../api/checkInSystemApi';
 import {parseISO, startOfMinute} from 'date-fns';
 import {errorToast} from '../../utils/toast';
-import {toLocaleString} from "../../utils/time";
+import {toLocaleString} from '../../utils/time';
 
 const links = [
   {name: 'Calendar', route: '/calendar'},

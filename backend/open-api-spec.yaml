@@ -426,7 +426,7 @@ paths:
     post:
       tags:
         - wifi
-      description: add or update a wifi network
+      description: add a wifi network
       operationId: addWifiNetwork
       requestBody:
         description: wifi network

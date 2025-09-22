@@ -22,7 +22,7 @@ type Cmd interface {
 
 func NewExecutor() Executor {
 	executor := executor{
-		useSshTunnel: os.Getenv("USE_SSH_TUNNEL") != "",
+		useSSHTunnel: os.Getenv("USE_SSH_TUNNEL") != "",
 	}
 
 	err := executor.Call(context.Background(), "echo", "executor initialized")
@@ -34,28 +34,35 @@ func NewExecutor() Executor {
 }
 
 type executor struct {
-	useSshTunnel bool
+	useSSHTunnel bool
 }
 
-func (e *executor) CallString(ctx context.Context, command string, arg ...string) (string, error) {
+func (e *executor) CallString(ctx context.Context, command string, args ...string) (string, error) {
 
 	var cmd *exec.Cmd
 
-	if e.useSshTunnel {
+	if e.useSSHTunnel {
 		sshHost := os.Getenv("SSH_HOST")
 		sshPassword := os.Getenv("SSH_PASSWORD")
-		originalCommand := command + " " + strings.Join(arg, " ")
+		originalCommand := command + " " + strings.Join(args, " ")
+		for _, arg := range args {
+			if strings.Contains(arg, " ") {
+				escaped := strings.ReplaceAll(arg, `"`, `\"`)
+				arg = `"` + escaped + `"`
+			}
+			originalCommand += ` ` + arg
+		}
 
 		cmd = exec.CommandContext(ctx, "sshpass", "-p", sshPassword, "ssh",
 			"-o", "StrictHostKeyChecking=no", fmt.Sprintf("root@%s", sshHost), originalCommand)
 	} else {
-		cmd = exec.CommandContext(ctx, command, arg...)
+		cmd = exec.CommandContext(ctx, command, args...)
 	}
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		logOutputLines(ctx, slog.LevelError, command, output)
-		return string(output), fmt.Errorf("call failed: %s %v error=%w", command, arg, err)
+		return string(output), fmt.Errorf("call failed: %s %v error=%w", command, args, err)
 	}
 	return string(output), nil
 }

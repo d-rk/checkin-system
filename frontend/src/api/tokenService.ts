@@ -1,5 +1,5 @@
-import {BearerToken} from "./checkInSystemApi";
-import axios from "axios";
+import {BearerToken} from './checkInSystemApi';
+import axios from 'axios';
 
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
@@ -51,4 +51,3 @@ export const initializeAuth = () => {
     setAuthHeader(token);
   }
 };
-
