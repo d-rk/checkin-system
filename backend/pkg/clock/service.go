@@ -3,6 +3,7 @@ package clock
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/d-rk/checkin-system/pkg/cmd"
@@ -31,6 +32,9 @@ func (s *service) SetClock(ctx context.Context, timestamp time.Time) error {
 	// Format the time for the 'date' command (YYYY-MM-DD HH:MM:SS)
 	loc, _ := time.LoadLocation("Local")
 	dateStr := timestamp.In(loc).Format("2006-01-02 15:04:05")
+
+	slog.Info("setting system clock", "timestamp", timestamp, "dateStr", dateStr)
+
 	if err := s.executor.Call(ctx, "date", "-s", dateStr); err != nil {
 		return fmt.Errorf("failed to call date command: %w", err)
 	}
