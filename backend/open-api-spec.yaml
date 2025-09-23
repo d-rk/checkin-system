@@ -449,19 +449,19 @@ paths:
       responses:
         "204":
           description: "network removed"
-  /api/v1/wifi/hotspot:
+  /api/v1/wifi/status:
     get:
       tags:
         - wifi
-      description: is hotspot mode enabled
-      operationId: getWifiMode
+      description: get status of wifi interface
+      operationId: getWifiStatus
       responses:
         "200":
-          description: "is hotspot mode enabled"
+          description: "status of wifi interface"
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: "#/components/schemas/WifiStatus"
     put:
       tags:
         - wifi
@@ -626,6 +626,25 @@ components:
           minLength: 1
         password:
           type: string
+
+    WifiStatus:
+      type: object
+      required:
+        - state
+        - mode
+      properties:
+        state:
+          type: string
+          enum: [up, down]
+        mode:
+          type: string
+          enum: [client, hotspot]
+        ipAddress:
+          type: string
+          format: ipv4
+        ssid:
+          type: string
+          minLength: 1
 
     BearerToken:
       type: object

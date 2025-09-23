@@ -466,14 +466,13 @@ func (h *apiHandler) RemoveWifiNetwork(w http.ResponseWriter, r *http.Request, s
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *apiHandler) GetWifiMode(w http.ResponseWriter, r *http.Request) {
-
-	mode, err := h.wifiService.GetWifiMode(r.Context())
+func (h *apiHandler) GetWifiStatus(w http.ResponseWriter, r *http.Request) {
+	status, err := h.wifiService.GetStatus(r.Context())
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
-	writeJSON(w, r, http.StatusOK, mode)
+	writeJSON(w, r, http.StatusOK, toAPIWifiStatus(status))
 }
 
 func (h *apiHandler) ToggleWifiMode(w http.ResponseWriter, r *http.Request) {

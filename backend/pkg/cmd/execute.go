@@ -44,14 +44,7 @@ func (e *executor) CallString(ctx context.Context, command string, args ...strin
 	if e.useSSHTunnel {
 		sshHost := os.Getenv("SSH_HOST")
 		sshPassword := os.Getenv("SSH_PASSWORD")
-		originalCommand := command + " " + strings.Join(args, " ")
-		for _, arg := range args {
-			if strings.Contains(arg, " ") {
-				escaped := strings.ReplaceAll(arg, `"`, `\"`)
-				arg = `"` + escaped + `"`
-			}
-			originalCommand += ` ` + arg
-		}
+		originalCommand := mergeCommand(command, args)
 
 		cmd = exec.CommandContext(ctx, "sshpass", "-p", sshPassword, "ssh",
 			"-o", "StrictHostKeyChecking=no", fmt.Sprintf("root@%s", sshHost), originalCommand)
@@ -65,6 +58,17 @@ func (e *executor) CallString(ctx context.Context, command string, args ...strin
 		return string(output), fmt.Errorf("call failed: %s %v error=%w", command, args, err)
 	}
 	return string(output), nil
+}
+
+func mergeCommand(command string, args []string) string {
+	for _, arg := range args {
+		if strings.Contains(arg, " ") {
+			escaped := strings.ReplaceAll(arg, `"`, `\"`)
+			arg = `"` + escaped + `"`
+		}
+		command += ` ` + arg
+	}
+	return command
 }
 
 func (e *executor) Call(ctx context.Context, command string, arg ...string) error {

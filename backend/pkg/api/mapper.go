@@ -9,6 +9,7 @@ import (
 	"github.com/d-rk/checkin-system/pkg/checkin"
 	"github.com/d-rk/checkin-system/pkg/clock"
 	"github.com/d-rk/checkin-system/pkg/user"
+	"github.com/d-rk/checkin-system/pkg/wifi"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	"gopkg.in/guregu/null.v4"
 )
@@ -136,6 +137,15 @@ func toAPIWifiNetworks(networks []string) []WifiNetwork {
 		}
 	}
 	return result
+}
+
+func toAPIWifiStatus(status wifi.Status) WifiStatus {
+	return WifiStatus{
+		State:     WifiStatusState(status.State),
+		IpAddress: status.IPAddress,
+		Ssid:      status.SSID,
+		Mode:      WifiStatusMode(status.Mode),
+	}
 }
 
 func fromAPIRefTimestamp(timestamp string) (time.Time, error) {

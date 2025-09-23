@@ -16,9 +16,10 @@ import {WifiNetwork} from '../../api/checkInSystemApi';
 type Props = {
   networks: WifiNetwork[];
   onRemove: (ssid: string) => Promise<void>;
+  connectedSsid?: string;
 };
 
-const WifiNetworkList: FC<Props> = ({networks, onRemove}) => {
+const WifiNetworkList: FC<Props> = ({networks, onRemove, connectedSsid}) => {
   return (
     <TableContainer>
       <Table>
@@ -26,7 +27,7 @@ const WifiNetworkList: FC<Props> = ({networks, onRemove}) => {
         <Thead>
           <Tr>
             <Th>SSID</Th>
-            <Th>Password</Th>
+            <Th>Connected</Th>
             <Th textAlign="right">Actions</Th>
           </Tr>
         </Thead>
@@ -34,7 +35,7 @@ const WifiNetworkList: FC<Props> = ({networks, onRemove}) => {
           {networks.map(network => (
             <Tr key={network.ssid}>
               <Td>{network.ssid}</Td>
-              <Td>***</Td>
+              <Td>{network.ssid === connectedSsid ? '🟢' : '🔴'}</Td>
               <Td textAlign="right">
                 <IconButton
                   colorScheme="red"

@@ -7,7 +7,7 @@ import {
   Spacer,
 } from '@chakra-ui/react';
 import React, {FC, useRef} from 'react';
-import {WifiNetwork} from '../../api/checkInSystemApi';
+import {WifiNetwork, WifiStatus} from '../../api/checkInSystemApi';
 import WifiNetworkList from './WifiNetworkList';
 import {AddIcon} from '@chakra-ui/icons';
 import {WifiNetworkAdd, WifiNetworkAddRef} from './WifiNetworkAdd';
@@ -17,16 +17,16 @@ type Props = {
   networks: WifiNetwork[];
   onAdd: (network: WifiNetwork) => Promise<void>;
   onRemove: (ssid: string) => Promise<void>;
-  isHotspot: boolean;
   onToggleWifiMode: () => Promise<void>;
+  wifiStatus?: WifiStatus;
 };
 
 export const WifiSettings: FC<Props> = ({
   networks,
   onAdd,
   onRemove,
-  isHotspot,
   onToggleWifiMode,
+  wifiStatus,
 }) => {
   const wifiNetworkAddRef = useRef<WifiNetworkAddRef>(null);
 
@@ -51,10 +51,17 @@ export const WifiSettings: FC<Props> = ({
               />
             </Box>
           </Flex>
-          <WifiNetworkList networks={networks || []} onRemove={onRemove} />
+          <WifiNetworkList
+            networks={networks || []}
+            connectedSsid={wifiStatus?.ssid}
+            onRemove={onRemove}
+          />
           <WifiNetworkAdd ref={wifiNetworkAddRef} onAddNetwork={onAdd} />
         </Box>
-        <WifiMode isHotspot={isHotspot} onToggle={onToggleWifiMode} />
+        <WifiMode
+          isHotspot={wifiStatus?.mode === 'hotspot'}
+          onToggle={onToggleWifiMode}
+        />
       </SimpleGrid>
     </>
   );

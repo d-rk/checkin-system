@@ -60,6 +60,13 @@ export type WifiNetwork = {
   password?: string;
 };
 
+export type WifiStatus = {
+  state: 'up' | 'down';
+  mode: 'client' | 'hotspot';
+  ssid?: string;
+  ipAddress?: string;
+};
+
 export type BearerToken = {
   token: string;
   refreshToken: string;
@@ -248,8 +255,8 @@ export const useWifiNetworks = (): SWRResponse<WifiNetwork[], Error> => {
   return useSWR<WifiNetwork[], Error>('/api/v1/wifi/networks', fetcher);
 };
 
-export const useWifiMode = (): SWRResponse<boolean, Error> => {
-  return useSWR<boolean, Error>('/api/v1/wifi/hotspot', fetcher);
+export const useWifiStatus = (): SWRResponse<WifiStatus, Error> => {
+  return useSWR<WifiStatus, Error>('/api/v1/wifi/status', fetcher);
 };
 
 export const toggleWifiMode = () => {

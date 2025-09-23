@@ -7,7 +7,7 @@ import {
   setHardwareClock,
   toggleWifiMode,
   useClock,
-  useWifiMode,
+  useWifiStatus,
   useWifiNetworks,
   WifiNetwork,
 } from '../api/checkInSystemApi';
@@ -34,11 +34,11 @@ export const SettingsPage: FC = () => {
     mutate: mutateNetworks,
   } = useWifiNetworks();
   const {
-    data: wifiMode,
-    isLoading: modeLoading,
-    error: modeError,
-    mutate: mutateMode,
-  } = useWifiMode();
+    data: wifiStatus,
+    isLoading: statusLoading,
+    error: statusError,
+    mutate: mutateStatus,
+  } = useWifiStatus();
 
   const handleClockSet = async (newClock: Clock): Promise<Clock> => {
     try {
@@ -82,7 +82,7 @@ export const SettingsPage: FC = () => {
       try {
         setIsNetworkDown(true);
         await toggleWifiMode();
-        await mutateMode();
+        await mutateStatus();
       } catch (error) {
         toast(errorToast('unable to toggle wifi mode', error));
       } finally {
@@ -97,11 +97,11 @@ export const SettingsPage: FC = () => {
   if (networksError) {
     toast(errorToast('unable read wifi networks', networksError));
   }
-  if (modeError) {
-    toast(errorToast('unable read wifi mode', modeError));
+  if (statusError) {
+    toast(errorToast('unable read wifi status', statusError));
   }
 
-  if (isClockLoading || networksLoading || modeLoading || isNetworkDown) {
+  if (isClockLoading || networksLoading || statusLoading || isNetworkDown) {
     return (
       <LoadingPage message={isNetworkDown ? 'no connection' : undefined} />
     );
@@ -113,10 +113,10 @@ export const SettingsPage: FC = () => {
         <SimpleGrid spacing={20} columns={{base: 1, md: 2}}>
           <ClockSettingsForm currentClock={clock!} onSubmit={handleClockSet} />
           <WifiSettings
+            wifiStatus={wifiStatus}
             networks={networks || []}
             onAdd={handleWifiAdd}
             onRemove={handleWifiRemove}
-            isHotspot={wifiMode!}
             onToggleWifiMode={handleToggleWifiMode}
           />
         </SimpleGrid>

@@ -15,7 +15,7 @@ function usage() {
     echo "  add SSID PASSWORD    Add network (moves to top priority)"
     echo "  remove SSID          Remove network by SSID"
     echo "  list                 List all configured networks"
-    echo "  mode                 Show current WiFi mode (client or hotspot)"
+    echo "  status               Show status of wifi interface"
     echo "  toggle-mode          Toggle between client and hotspot mode"
     echo "  help                 Show this help message"
     echo ""
@@ -23,6 +23,7 @@ function usage() {
     echo "  $0 add \"MyWiFi\" \"mypassword\""
     echo "  $0 remove \"OldNetwork\""
     echo "  $0 list"
+    echo "  $0 status"
 }
 
 function ensure_config_exists() {
@@ -179,6 +180,9 @@ function list_networks() {
         return 1
     fi
 
+    echo "WiFi Networks:"
+    echo "==========="
+
     local network_count=0
     local in_network=false
     local current_ssid=""
@@ -297,6 +301,48 @@ function toggle_wifi_mode() {
   echo "wlan0 now configured as: ${MODE}"
 }
 
+function show_status() {
+    echo "WiFi Status:"
+    echo "==========="
+
+    # Check if wlan0 interface exists and is up
+    if ! ip link show wlan0 &>/dev/null; then
+        echo "wlan0 interface not found"
+        return 1
+    fi
+
+    # Check if interface is up
+    local interface_state=$(ip link show wlan0 | grep -o 'state [A-Z]*' | cut -d' ' -f2)
+    local is_up=$(ip link show wlan0 | grep -q 'state UP' && echo "true" || echo "false")
+
+    echo "State: $interface_state"
+
+    if [[ "$is_up" == "true" ]]; then
+        # Interface is up, get IP address
+        local ip_address=$(ip -4 addr show wlan0 | grep -Po 'inet \K[\d.]+' | head -n1)
+
+        if [[ -n "$ip_address" ]]; then
+            echo "IP Address: $ip_address"
+
+            # Try to determine connected network from wpa_supplicant status
+            if command -v wpa_cli &>/dev/null; then
+                local connected_ssid=$(wpa_cli -i wlan0 status 2>/dev/null | grep '^ssid=' | cut -d'=' -f2)
+                if [[ -n "$connected_ssid" ]]; then
+                    echo "SSID: $connected_ssid"
+                fi
+            fi
+        else
+            echo "IP Address: None (interface up but no IP assigned)"
+        fi
+    else
+        echo "IP Address: None (interface down)"
+    fi
+
+    # Show current mode
+    local mode=$(get_wifi_mode)
+    echo "Mode: $mode"
+}
+
 # Main script logic
 case "${1:-}" in
     "add")
@@ -318,8 +364,8 @@ case "${1:-}" in
     "list")
         list_networks
         ;;
-    "mode")
-        get_wifi_mode
+    "status")
+        show_status
         ;;
     "toggle-mode")
         toggle_wifi_mode
