@@ -360,9 +360,21 @@ MAJOR="${TAG%%.*}"           # v3
 MINOR="${TAG%.*}"            # v3.3
 PATCH="$TAG"                 # v3.3.3
 
-VERSION=$MAJOR GIT_COMMIT=$COMMIT docker buildx bake --push
-VERSION=$MINOR GIT_COMMIT=$COMMIT docker buildx bake --push
 VERSION=$PATCH GIT_COMMIT=$COMMIT docker buildx bake --push
+
+docker tag quay.io/d_rk/checkin-system-backend:$PATCH quay.io/d_rk/checkin-system-backend:$MINOR
+docker tag quay.io/d_rk/checkin-system-backend:$PATCH quay.io/d_rk/checkin-system-backend:$MAJOR
+docker tag quay.io/d_rk/checkin-system-frontend:$PATCH quay.io/d_rk/checkin-system-frontend:$MINOR
+docker tag quay.io/d_rk/checkin-system-frontend:$PATCH quay.io/d_rk/checkin-system-frontend:$MAJOR
+docker tag quay.io/d_rk/checkin-system-reader:$PATCH quay.io/d_rk/checkin-system-reader:$MINOR
+docker tag quay.io/d_rk/checkin-system-reader:$PATCH quay.io/d_rk/checkin-system-reader:$MAJOR
+
+docker push quay.io/d_rk/checkin-system-backend:$MINOR
+docker push quay.io/d_rk/checkin-system-backend:$MAJOR
+docker push quay.io/d_rk/checkin-system-frontend:$MINOR
+docker push quay.io/d_rk/checkin-system-frontend:$MAJOR
+docker push quay.io/d_rk/checkin-system-reader:$MINOR
+docker push quay.io/d_rk/checkin-system-reader:$MAJOR
 
 # push git tags
 git push --tags
