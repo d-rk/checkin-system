@@ -329,7 +329,21 @@ And then just use: `ssh checkin`
 
 ### build/publish docker images
 
-on an arm64 machine clone the repo an run:
+#### publish latest image for development
+
+```shell
+# login to quay.io / user-settings / Generate Encrypted Password
+export QUAY_IO_PASSWORD=xxx
+echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
+
+# build and push latest
+GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake --push
+
+# build and push latest and backend only
+GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake backend --push
+```
+
+#### publish release
 
 ```shell
 # login to quay.io / user-settings / Generate Encrypted Password
@@ -337,14 +351,18 @@ export QUAY_IO_PASSWORD=xxx
 echo $QUAY_IO_PASSWORD | docker login -u d_rk --password-stdin quay.io
 
 # build and push with tag
-git tag v2.2 # create tag
-TAG=$(git describe --tags --abbrev=0) GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake --push
+git tag v3.0.0 # create tag
 
-# build and push latest
-GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake --push
+# build and push versioned docker images
+COMMIT=$(git rev-parse --short HEAD)
+TAG=$(git describe --tags --abbrev=0)
+MAJOR="${TAG%%.*}"           # v3
+MINOR="${TAG%.*}"            # v3.3
+PATCH="$TAG"                 # v3.3.3
 
-# build and push latest and backend only
-GIT_COMMIT=$(git rev-parse --short HEAD) docker buildx bake backend --push
+VERSION=$MAJOR GIT_COMMIT=$COMMIT docker buildx bake --push
+VERSION=$MINOR GIT_COMMIT=$COMMIT docker buildx bake --push
+VERSION=$PATCH GIT_COMMIT=$COMMIT docker buildx bake --push
 
 # push git tags
 git push --tags

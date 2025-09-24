@@ -132,6 +132,7 @@ curl -O -L https://raw.githubusercontent.com/d-rk/checkin-system/main/docker-com
 cat > .env <<- EOM
 API_SECRET=08afe71014fa32e22fa115dc
 API_ADMIN_PASSWORD=secret
+VERSION=v3
 EOM
 
 echo "pulling docker images..."

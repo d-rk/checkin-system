@@ -21,15 +21,15 @@ services:
       context: ./backend
       dockerfile: "Dockerfile"
       args:
-        VERSION: ${TAG:-latest}
+        VERSION: ${VERSION:-latest}
         GIT_COMMIT: ${GIT_COMMIT:-unknown}
       tags:
-        - quay.io/d_rk/checkin-system-backend:${TAG:-latest}
+        - quay.io/d_rk/checkin-system-backend:${VERSION:-latest}
       x-bake:
         platforms:
           - linux/amd64
           - linux/arm64
-    image: quay.io/d_rk/checkin-system-backend
+    image: quay.io/d_rk/checkin-system-backend:${VERSION:?error}
     container_name: backend
     restart: unless-stopped
     links:
@@ -64,16 +64,16 @@ services:
     build:
       context: ./frontend
       args:
-        VERSION: ${TAG:-latest}
+        VERSION: ${VERSION:-latest}
         GIT_COMMIT: ${GIT_COMMIT:-unknown}
       dockerfile: "Dockerfile"
       tags:
-        - quay.io/d_rk/checkin-system-frontend:${TAG:-latest}
+        - quay.io/d_rk/checkin-system-frontend:${VERSION:-latest}
       x-bake:
         platforms:
           - linux/amd64
           - linux/arm64
-    image: quay.io/d_rk/checkin-system-frontend
+    image: quay.io/d_rk/checkin-system-frontend:${VERSION:?error}
     container_name: frontend
     restart: unless-stopped
     links:
@@ -89,12 +89,12 @@ services:
       context: ./raspi/rfid_reader
       dockerfile: "Dockerfile"
       tags:
-        - quay.io/d_rk/checkin-system-reader:${TAG:-latest}
+        - quay.io/d_rk/checkin-system-reader:${VERSION:-latest}
       x-bake:
         platforms:
           - linux/amd64
           - linux/arm64
-    image: quay.io/d_rk/checkin-system-reader
+    image: quay.io/d_rk/checkin-system-reader:${VERSION:?error}
     container_name: rfid-reader
     restart: unless-stopped
     privileged: true
@@ -116,6 +116,7 @@ services:
     environment:
       WATCHTOWER_POLL_INTERVAL: "60"
       WATCHTOWER_CLEANUP: "true"
+      WATCHTOWER_LOG_LEVEL: "debug"
 # volume for db data
 volumes:
   db:
