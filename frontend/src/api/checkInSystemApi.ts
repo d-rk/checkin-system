@@ -260,7 +260,7 @@ export const useWifiStatus = (): SWRResponse<WifiStatus, Error> => {
 };
 
 export const toggleWifiMode = () => {
-  return axios.put('/api/v1/wifi/hotspot');
+  return axios.put('/api/v1/wifi/mode');
 };
 
 export const addWifiNetwork = (network: WifiNetwork) => {

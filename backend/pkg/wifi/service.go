@@ -30,7 +30,7 @@ type Service interface {
 	AddNetwork(ctx context.Context, ssid, password string) error
 	RemoveNetwork(ctx context.Context, ssid string) error
 	GetStatus(ctx context.Context) (Status, error)
-	ToggleWifiMode(ctx context.Context) (bool, error)
+	ToggleWifiMode(ctx context.Context) error
 }
 
 type service struct {
@@ -55,13 +55,13 @@ func NewService() Service {
 		panic(fmt.Errorf("failed to get initial wifi status: %w", err))
 	}
 
-	if status.Mode == "client" && status.IPAddress == nil {
+	if status.Mode == "client" && (strings.ToLower(status.State) == "down" || status.IPAddress == nil) {
 		slog.Warn("wifi in client mode but no IP address assigned")
-		mode, toggleErr := s.ToggleWifiMode(context.Background())
-		if toggleErr != nil {
-			panic(fmt.Errorf("failed to toggle wifi mode: %w", toggleErr))
+		err = s.ToggleWifiMode(context.Background())
+		if err != nil {
+			panic(fmt.Errorf("failed to toggle wifi mode: %w", err))
 		}
-		slog.Info("wifi mode updated", "mode", mode)
+		slog.Info("wifi mode updated")
 	}
 
 	return &s
@@ -132,22 +132,8 @@ func extractField(output string, key string) string {
 	return *value
 }
 
-func (s *service) GetWifiMode(ctx context.Context) (bool, error) {
-
-	output, err := s.executeScriptString(ctx, "mode")
-	if err != nil {
-		return false, err
-	}
-
-	output = strings.TrimSpace(output)
-	return output == "hotspot", nil
-}
-
-func (s *service) ToggleWifiMode(ctx context.Context) (bool, error) {
-	if err := s.executeScript(ctx, "toggle-mode"); err != nil {
-		return false, err
-	}
-	return s.GetWifiMode(ctx)
+func (s *service) ToggleWifiMode(ctx context.Context) error {
+	return s.executeScript(ctx, "toggle-mode")
 }
 
 func writeScriptToTemp() (string, error) {

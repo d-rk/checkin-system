@@ -462,18 +462,16 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WifiStatus"
+  /api/v1/wifi/mode:
     put:
       tags:
         - wifi
       description: toggle hotspot mode
       operationId: toggleWifiMode
       responses:
-        "200":
-          description: "is hotspot mode enabled"
-          content:
-            application/json:
-              schema:
-                type: boolean
+        "204":
+          description: "mode toggled"
+
 components:
   parameters:
     userIdPathParam:

@@ -29,13 +29,12 @@ func (s *service) GetClock(_ context.Context) (Clock, error) {
 }
 
 func (s *service) SetClock(ctx context.Context, timestamp time.Time) error {
-	// Format the time for the 'date' command (YYYY-MM-DD HH:MM:SS)
-	loc, _ := time.LoadLocation("Local")
-	dateStr := timestamp.In(loc).Format("2006-01-02 15:04:05")
 
-	slog.Info("setting system clock", "timestamp", timestamp, "dateStr", dateStr)
+	dateStr := timestamp.UTC().Format("2006-01-02 15:04:05")
 
-	if err := s.executor.Call(ctx, "date", "-s", dateStr); err != nil {
+	slog.InfoContext(ctx, "setting system clock", "timestamp", timestamp, "dateStr", dateStr)
+
+	if err := s.executor.Call(ctx, "date", "-u", "-s", dateStr); err != nil {
 		return fmt.Errorf("failed to call date command: %w", err)
 	}
 

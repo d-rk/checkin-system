@@ -476,12 +476,12 @@ func (h *apiHandler) GetWifiStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *apiHandler) ToggleWifiMode(w http.ResponseWriter, r *http.Request) {
-	mode, err := h.wifiService.ToggleWifiMode(r.Context())
+	err := h.wifiService.ToggleWifiMode(r.Context())
 	if err != nil {
 		handlerError(w, r, err)
 		return
 	}
-	writeJSON(w, r, http.StatusOK, mode)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func writeJSON(w http.ResponseWriter, r *http.Request, status int, response any) {
