@@ -51,6 +51,7 @@ services:
       - ADMIN_PASSWORD=${API_ADMIN_PASSWORD}
       - USE_SSH_TUNNEL=true
       - SSH_HOST=host.docker.internal
+      - SSH_USER=root
       - SSH_PASSWORD=check1n!
     networks:
       - checkin-system-network

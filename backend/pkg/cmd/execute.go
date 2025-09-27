@@ -43,11 +43,12 @@ func (e *executor) CallString(ctx context.Context, command string, args ...strin
 
 	if e.useSSHTunnel {
 		sshHost := os.Getenv("SSH_HOST")
+		sshUser := os.Getenv("SSH_USER")
 		sshPassword := os.Getenv("SSH_PASSWORD")
 		originalCommand := mergeCommand(command, args)
 
 		cmd = exec.CommandContext(ctx, "sshpass", "-p", sshPassword, "ssh",
-			"-o", "StrictHostKeyChecking=no", fmt.Sprintf("root@%s", sshHost), originalCommand)
+			"-o", "StrictHostKeyChecking=no", fmt.Sprintf("%s@%s", sshUser, sshHost), originalCommand)
 	} else {
 		cmd = exec.CommandContext(ctx, command, args...)
 	}
