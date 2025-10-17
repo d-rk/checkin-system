@@ -83,8 +83,11 @@ The easiest way to install and configure a raspi is by using DietPi.
 2. Flash `DietPi_RPi-ARMv8-Bookworm.img.xz` to SD card
 3. Go to `raspi/dietpi` and patch the image `./patch.sh <folder-where-sd-card-is-mounted-to>`
 4. After first boot of the PI, run `/boot/checkin-system/post-install.sh` locally.
-
-After the setup the raspi is available via:
+    <p>
+   ⚠️ After first boot the PI will register automatically in the Wi-Fi network specified while running `patch.sh`.<br />
+   Connection is only possible via this Wi-Fi network.
+</p>
+After `post-install.sh` ran, the raspi is available via:
 1. USB Ethernet with ip 192.168.12.1
 2. WLAN Hotspot with ip 192.168.14.1
 
