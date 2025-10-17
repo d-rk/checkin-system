@@ -2,7 +2,17 @@
 
 over-engineered checkin-system that can be deployed to a raspberry pi.
 
-![Raspi Board](.github/images/raspi.jpg)
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap;">
+  <div style="margin: 10px; text-align: center;">
+    <img src=".github/images/board_v1.jpg" alt="Raspi Board V1" width="400"/>
+    <div style="font-style: italic; max-width: 400px;">Version 1: Initial prototype with manual wiring on a Raspberry Pi 4</div>
+  </div>
+  
+  <div style="margin: 10px; text-align: center;">
+    <img src=".github/images/board_v2_1.jpg" alt="Raspi Board V2" width="400"/>
+    <div style="font-style: italic; max-width: 400px;">Version 2: Custom PCB design with Raspberry Pi Zero 2W</div>
+  </div>
+</div>
 
 ## Hardware
 
@@ -16,20 +26,52 @@ For the shield the following parts are needed:
 #### parts list
 
 | part                       | description                             | link                                        |
-| -------------------------- | --------------------------------------- | ------------------------------------------- |
+|----------------------------|-----------------------------------------|---------------------------------------------|
 | RC522 RFID Reader module   | module to read ids from cards or tokens | https://www.amazon.de/gp/product/B01M28JAAZ |
 | PCF8523 RTC module         | module to record correct timestamps     | https://www.amazon.de/gp/product/B07LGTX8M9 |
 | KY-012 active piezo buzzer | acoustic feedback after rfid read       | https://www.amazon.de/gp/product/B07ZYVH6XM |
 | green/red LED              | visual feedback after rfid read         |                                             |
 | 2 resistors                | needed for LED circuits                 |                                             |
 
-#### Schematic
+### V1
 
-The shield can be build based on the following schematic:
+Version 1 of hardware was built without own PCB and everything was wired manually.
+A raspberry pi 4 was used as a base.
 
-![Fritzing](.github/images/fritzing.png)
+The shield for this version can be build based on the following schematic:
 
-Download the [Fritzing File](raspi/fritzing/rfid_reader.fzz).
+![Fritzing V1](.github/images/fritzing.png)
+
+Download the [Fritzing File V1](raspi/fritzing/rfid_reader.fzz).
+
+### V2
+
+Version 2 of hardware is built with own PCB to limit the amount of soldering needed.
+Also, a raspberry pi zero 2w was used as a base.
+
+The shield for this version can be build based on the following schematic:
+
+<img src=".github/images/fritzing_v2.png" alt="Fritzing V2" width="600"/>
+
+Download the [Fritzing File V2](raspi/fritzing/rfid_reader_v2.fzz).
+
+The Fritzing file also contains a PCB design for the shield.
+
+<img src=".github/images/pcb.png" alt="PCB V2" width="600"/>
+
+The PCB can be ordered e.g. from [PCBWay](https://www.pcbway.com/).
+
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap;">
+  <div style="margin: 10px; text-align: center;">
+    <img src=".github/images/board_v2_1.jpg" alt="Raspi Board V2" width="400"/>
+    <div style="font-style: italic; max-width: 400px;">Version 2: Hardware without case</div>
+  </div>
+
+  <div style="margin: 10px; text-align: center;">
+    <img src=".github/images/board_v2_2.jpg" alt="PCB" width="400"/>
+    <div style="font-style: italic; max-width: 400px;">Version 2: Custom PCB</div>
+  </div>
+</div>
 
 ### Install and configure the raspi
 
